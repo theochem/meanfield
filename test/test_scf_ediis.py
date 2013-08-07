@@ -18,23 +18,16 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
-'''Mean-field electronic structure code'''
 
 
-from horton.meanfield.builtin import *
-from horton.meanfield.convergence import *
-from horton.meanfield.core import *
-from horton.meanfield.cext import *
-from horton.meanfield.guess import *
-from horton.meanfield.hamiltonian import *
-from horton.meanfield.libxc import *
-from horton.meanfield.linear import *
-from horton.meanfield.observable import *
-from horton.meanfield.project import *
-from horton.meanfield.scf import *
-from horton.meanfield.scf_oda import *
-from horton.meanfield.scf_cdiis import *
-from horton.meanfield.scf_ediis import *
-from horton.meanfield.scf_ediis2 import *
-from horton.meanfield.scf_wrapper import *
-from horton.meanfield.wfn import *
+import numpy as np
+from horton import *
+from horton.meanfield.test.common import check_scf_hf_cs_hf, check_scf_water_cs_hfs
+
+
+def test_scf_ediis_cs_hf():
+    check_scf_hf_cs_hf(SCFWrapper('ediis', threshold=1e-7, nvector=20))
+
+
+def test_scf_ediis_cs_hfs():
+    check_scf_water_cs_hfs(SCFWrapper('ediis', threshold=1e-6, nvector=20))
