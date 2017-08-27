@@ -1,0 +1,30 @@
+package:
+  version: "{{ load_setup_py_data().version }}"
+  name: 'meanfield'
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - numpy
+    - cython >=0.24.1
+    - setuptools
+    - nose
+  run:
+    - python
+    - numpy
+    - nose
+
+about:
+  description: HORTON module for SCF and HF/DFT methods 
+  home: https://github.com/theochem/meanfield
+  license: GPLv3
+
+extra:
+  recipe-maintainers: Toon Verstraelen <toon.verstraelen@gmail.com>
