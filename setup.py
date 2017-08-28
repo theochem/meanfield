@@ -10,16 +10,25 @@ import Cython.Build
 from tools.gitversion import get_gitversion
 
 
-def readme():
+def get_version():
+    """Load the version from version.py, without importing it.
+    This function assumes that the last line in the file contains a variable defining the
+    version string with single quotes.
+    """
+    with open('meanfield/version.py', 'r') as f:
+        return f.read().split('=')[-1].replace('\'', '').strip()
+
+
+def get_readme():
     with open('README.rst') as f:
         return f.read()
 
 
 setup(
     name='meanfield',
-    version=get_gitversion('meanfield', verbose=(__name__ == '__main__')),
+    version=get_version(),
     description='HORTON module for SCF and HF/DFT methods',
-    long_description=readme(),
+    long_description=get_readme(),
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='https://github.com/theochem/meanfield',
