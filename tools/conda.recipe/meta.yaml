@@ -1,11 +1,13 @@
 package:
-  version: "{{ load_setup_py_data().version }}"
+  version: "{{ PROJECT_VERSION }}"
   name: 'meanfield'
 
 source:
   path: ../../
 
 build:
+  script_env:
+   - PROJECT_VERSION
   number: 0
   #script: python setup.py install --prefix=$PREFIX
 
@@ -17,11 +19,13 @@ requirements:
     - setuptools
     - nose
     - libxc >=3.0.0
+    - gcc     # [ not win ]
   run:
     - python
     - numpy
     - nose
     - libxc
+    - libgcc  # [ not win ]
 
 about:
   description: HORTON module for SCF and HF/DFT methods 
