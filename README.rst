@@ -1,11 +1,9 @@
-.. image:: https://travis-ci.org/theochem/python-cython-ci-example.svg?branch=master
-    :target: https://travis-ci.org/theochem/python-cython-ci-example
-.. image:: https://ci.appveyor.com/api/projects/status/ora4yr7kot2ffr8x/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/theochem-travis-uploader/python-cython-ci-example
-.. image:: https://anaconda.org/theochem/pycydemo/badges/version.svg
-    :target: https://anaconda.org/theochem/pycydemo
-.. image:: https://codecov.io/gh/theochem/python-cython-ci-example/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/theochem/python-cython-ci-example
+.. image:: https://travis-ci.org/theochem/meanfield.svg?branch=master
+    :target: https://travis-ci.org/theochem/meanfield
+.. image:: https://anaconda.org/theochem/meanfield/badges/version.svg
+    :target: https://anaconda.org/theochem/meanfield
+.. image:: https://codecov.io/gh/theochem/meanfield/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/theochem/meanfield
 
 HORTON: *H*elpful *O*pen-source *R*esearch *TO*ol for *N*-fermion systems.
 Copyright (C) 2011-2016 The HORTON Development Team
