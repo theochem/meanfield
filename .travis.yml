@@ -116,7 +116,7 @@ script:
 - python setup.py sdist
 
 # Compile documentation
-- (cd doc; make html)
+# - (cd doc; make html)
 
 after_success:
 # Upload the coverage analysis
