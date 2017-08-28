@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+import os
 
 import numpy as np
 from setuptools import setup, Extension
@@ -11,6 +12,13 @@ from tools.gitversion import get_gitversion
 def readme():
     with open('README.rst') as f:
         return f.read()
+
+def get_libxc_path():
+    p = os.environ.get("PREFIX")
+    if p is not None:
+        return os.path.join(p, "include")
+    else:
+        return ""
 
 setup(
     name='meanfield',
@@ -26,7 +34,7 @@ setup(
     ext_modules=[Extension(
         'meanfield.cext',
         sources=['meanfield/cext.pyx'],
-        include_dirs=[np.get_include()],
+        include_dirs=[np.get_include(), get_libxc_path()],
     )],
     zip_safe=False,
     setup_requires=['numpy>=1.0', 'cython>=0.24.1'],
