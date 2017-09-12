@@ -21,7 +21,7 @@
 import numpy as np
 
 from horton.grid import BeckeMolGrid
-from horton.meanfield.test.common import load_mdata, load_er, load_orbsa_dms, load_orbsb_dms, \
+from .common import load_mdata, load_er, load_orbsa_dms, load_orbsb_dms, \
     get_obasis
 from .. import REffHam, RDirectTerm, RGridGroup, RBeckeHartree, UEffHam, UDirectTerm, UGridGroup, \
     UBeckeHartree

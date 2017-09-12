@@ -24,7 +24,7 @@
 import numpy as np
 from nose.plugins.attrib import attr
 
-from common import load_kin, load_orbs_alpha, load_olp, get_obasis
+from .common import load_kin, load_orbs_alpha, load_olp, get_obasis
 from horton.grid import get_random_rotation  # TODO: Remove random rotation?
 from .. import Orbitals
 from ..rotate import rotate_coeffs

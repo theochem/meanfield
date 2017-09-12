@@ -23,7 +23,7 @@
 import numpy as np
 from nose.tools import assert_raises
 
-from horton.meanfield.test.common import load_olp, load_kin, load_na, load_er, load_nn, load_mdata, \
+from .common import load_olp, load_kin, load_na, load_er, load_nn, load_mdata, \
     load_er_chol
 from .. import Orbitals, guess_core_hamiltonian, RTwoIndexTerm, RDirectTerm, RExchangeTerm, REffHam, \
     AufbauOccModel, CDIISSCFSolver

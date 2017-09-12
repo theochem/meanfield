@@ -22,7 +22,7 @@
 
 import numpy as np
 
-from horton.meanfield.test.common import load_orbs_alpha, load_orbs_beta, get_obasis, load_na, \
+from .common import load_orbs_alpha, load_orbs_beta, get_obasis, load_na, \
     load_kin, load_olp
 from .. import guess_core_hamiltonian
 

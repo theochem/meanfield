@@ -24,9 +24,9 @@ import matplotlib.pyplot as pt
 import numpy as np
 from os import path
 
-import gobasis_data
-import mol_data as mdata
-from horton import GOBasis
+from . import gobasis_data
+from . import mol_data as mdata
+from gbasis import GOBasis
 from horton.grid.molgrid import BeckeMolGrid
 from ..builtin import RDiracExchange, UDiracExchange
 from ..convergence import convergence_error_eigen

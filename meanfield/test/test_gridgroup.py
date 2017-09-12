@@ -23,7 +23,7 @@
 from nose.tools import assert_raises
 
 from horton.grid import BeckeMolGrid
-from horton.meanfield.test.common import get_obasis, load_mdata, load_orbs_alpha
+from .common import get_obasis, load_mdata, load_orbs_alpha
 from .. import RGridGroup, RLibXCMGGA, UGridGroup
 from ..cache import Cache
 

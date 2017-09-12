@@ -23,7 +23,7 @@
 
 import numpy as np
 
-from horton.meanfield.test.common import get_obasis, load_orbs_alpha, load_orbs_beta
+from .common import get_obasis, load_orbs_alpha, load_orbs_beta
 from horton.part import get_mulliken_operators
 from .. import compute_noninteracting_response
 

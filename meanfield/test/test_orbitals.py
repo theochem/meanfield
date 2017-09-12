@@ -24,9 +24,8 @@ import h5py as h5
 import numpy as np
 from nose.tools import assert_raises
 
-from horton.meanfield.test.common import load_mdata, load_olp, load_orbs_alpha, load_orbs_beta, \
-    load_dm
-from horton.test.common import numpy_seed
+from .common import load_mdata, load_olp, load_orbs_alpha, load_orbs_beta, \
+    load_dm, numpy_seed
 from .. import Orbitals
 
 
