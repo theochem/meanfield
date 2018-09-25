@@ -23,7 +23,7 @@
 from nose.plugins.attrib import attr
 
 from .common import check_hf_cs_hf, check_lih_os_hf, \
-    check_water_cs_hfs, check_n2_cs_hfs, check_h3_os_hfs, check_h3_os_pbe, \
+    check_h3_os_pbe, \
     check_co_cs_pbe, check_water_cs_m05, \
     check_methyl_os_tpss
 from .. import EDIIS2SCFSolver
@@ -35,19 +35,6 @@ def test_hf_cs_hf():
 
 def test_lih_os_hf():
     check_lih_os_hf(EDIIS2SCFSolver(threshold=1e-7))
-
-
-def test_water_cs_hfs():
-    check_water_cs_hfs(EDIIS2SCFSolver(threshold=1e-6))
-
-
-@attr('slow')
-def test_n2_cs_hfs():
-    check_n2_cs_hfs(EDIIS2SCFSolver(threshold=1e-6))
-
-
-def test_h3_os_hfs():
-    check_h3_os_hfs(EDIIS2SCFSolver(threshold=1e-6))
 
 
 @attr('slow')

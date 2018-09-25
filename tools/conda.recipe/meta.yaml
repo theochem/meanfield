@@ -6,26 +6,33 @@ source:
   path: ../../
 
 build:
-  script_env:
-   - PROJECT_VERSION
   number: 0
-  #script: python setup.py install --prefix=$PREFIX
 
 requirements:
   build:
-    - python
+    - {{ compiler('c') }}
+  host:
+    - python ={{ MYCONDAPY }}
     - numpy
     - cython >=0.24.1
     - setuptools
     - nose
-    - libxc >=3.0.0
-    - gcc     # [ not win ]
+    - libxc >=3 
   run:
     - python
     - numpy
     - nose
     - libxc
-    - libgcc  # [ not win ]
+    - scipy
+    - old_grids
+    - gbasis
+    - matplotlib
+test:
+  requires:
+    - nose
+  commands:
+    - conda inspect linkages meanfield
+    - nosetests -v --detailed-errors meanfield
 
 about:
   description: HORTON module for SCF and HF/DFT methods 

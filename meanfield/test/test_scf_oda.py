@@ -25,9 +25,9 @@ from nose.plugins.attrib import attr
 from nose.tools import assert_raises
 
 from .common import check_hf_cs_hf, check_lih_os_hf, \
-    check_water_cs_hfs, check_n2_cs_hfs, check_h3_os_hfs, check_h3_os_pbe, \
+    check_h3_os_pbe, \
     check_co_cs_pbe, check_water_cs_m05, \
-    check_methyl_os_tpss, load_mdata, load_olp, load_kin, load_na, load_er, load_orbs_alpha, \
+    check_methyl_os_tpss, load_olp, load_kin, load_na, load_er, load_orbs_alpha, \
     load_orbs_beta
 from .. import ODASCFSolver, AufbauSpinOccModel, UTwoIndexTerm, UDirectTerm, \
     UExchangeTerm, UEffHam, guess_core_hamiltonian, check_dm
@@ -39,20 +39,6 @@ def test_hf_cs_hf():
 
 def test_lih_os_hf():
     check_lih_os_hf(ODASCFSolver(threshold=1e-7))
-
-
-def test_water_cs_hfs():
-    check_water_cs_hfs(ODASCFSolver(threshold=1e-6))
-
-
-@attr('slow')
-def test_n2_cs_hfs():
-    check_n2_cs_hfs(ODASCFSolver(threshold=1e-6))
-
-
-@attr('slow')
-def test_h3_os_hfs():
-    check_h3_os_hfs(ODASCFSolver(threshold=1e-6))
 
 
 @attr('slow')
@@ -106,7 +92,6 @@ def test_find_min_quadratic():
 
 def test_aufbau_spin():
     fname = 'li_h_3_21G_hf_g09_fchk'
-    mdata = load_mdata(fname)
     occ_model = AufbauSpinOccModel(3)
 
     olp = load_olp(fname)

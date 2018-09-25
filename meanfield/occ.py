@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-class OccModel(object):
+class OccModel:
     """Base class for the occupation models"""
 
     def assign(self, *orbs):
@@ -117,7 +117,8 @@ class AufbauOccModel(OccModel):
         for orb, nocc in zip(orbs, self.noccs):
             if orb.nfn < nocc:
                 raise ElectronCountError(
-                    'The number of orbitals must not be lower than the number of alpha or beta electrons.')
+                    'The number of orbitals must not be lower than the number of '
+                    'alpha or beta electrons.')
             # It is assumed that the orbitals are sorted from low to high energy.
             if nocc == int(nocc):
                 orb.occupations[:nocc] = 1.0
@@ -242,10 +243,10 @@ class FermiOccModel(AufbauOccModel):
             def error(mu):
                 return nocc - get_occ(mu).sum()
 
-            mu0 = orb.energies[orb.nfn / 2]
+            mu0 = orb.energies[orb.nfn // 2]
             error0 = error(mu0)
             delta = 0.1 * (1 - 2 * (error0 < 0))
-            for i in xrange(100):
+            for i in range(100):
                 mu1 = mu0 + delta
                 error1 = error(mu1)
                 if error1 == 0 or ((error0 > 0) ^ (error1 > 0)):

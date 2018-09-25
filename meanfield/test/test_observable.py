@@ -21,8 +21,8 @@
 """Unit tests for horton/meanfield/observable.py."""
 
 from .common import check_dot_hessian, \
-    check_dot_hessian_polynomial, check_dot_hessian_cache, load_orbsa_dms, load_orbsb_dms, load_olp, \
-    load_kin, load_na, load_er, load_er_chol, load_orbs_alpha, load_orbs_beta
+    check_dot_hessian_polynomial, check_dot_hessian_cache, load_orbsa_dms, load_orbsb_dms, \
+    load_olp, load_kin, load_na, load_er, load_er_chol, load_orbs_alpha, load_orbs_beta
 
 from .. import RTwoIndexTerm, RDirectTerm, RExchangeTerm, REffHam, UTwoIndexTerm, UDirectTerm, \
     UExchangeTerm, UEffHam
@@ -82,7 +82,7 @@ def test_cache_dot_hessian_rhf_cholesky():
     check_dot_hessian_cache(ham, dma)
 
 
-def setup_uhf_case(cholesky=False):
+def setup_uhf_case():
     """Prepare data structures for UHF calculation."""
     fname = 'h3_hfs_321g_fchk'
     dma = load_orbsa_dms(fname)
@@ -118,19 +118,4 @@ def test_dot_hessian_uhf_fd():
 
 def test_cache_dot_hessian_uhf():
     dma, dmb, olp, core, ham, orb_alpha, orb_beta = setup_uhf_case()
-    check_dot_hessian_cache(ham, dma, dmb)
-
-
-def test_dot_hessian_uhf_polynomial_cholesky():
-    dma, dmb, olp, core, ham, orb_alpha, orb_beta = setup_uhf_case(True)
-    check_dot_hessian_polynomial(olp, core, ham, [orb_alpha, orb_beta])
-
-
-def test_dot_hessian_uhf_fd_cholesky():
-    dma, dmb, olp, core, ham, orb_alpha, orb_beta = setup_uhf_case(True)
-    check_dot_hessian(ham, dma, dmb)
-
-
-def test_cache_dot_hessian_uhf_cholesky():
-    dma, dmb, olp, core, ham, orb_alpha, orb_beta = setup_uhf_case(True)
     check_dot_hessian_cache(ham, dma, dmb)

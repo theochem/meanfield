@@ -25,8 +25,8 @@ from nose.tools import assert_raises
 
 from .common import load_olp, load_kin, load_na, load_er, load_nn, load_mdata, \
     load_er_chol
-from .. import Orbitals, guess_core_hamiltonian, RTwoIndexTerm, RDirectTerm, RExchangeTerm, REffHam, \
-    AufbauOccModel, CDIISSCFSolver
+from .. import Orbitals, guess_core_hamiltonian, RTwoIndexTerm, RDirectTerm, RExchangeTerm, \
+    REffHam, AufbauOccModel, CDIISSCFSolver
 from ..indextransform import _parse_four_index_transform_orbs, four_index_transform, \
     four_index_transform_cholesky, split_core_active, split_core_active_cholesky
 
@@ -91,7 +91,6 @@ def helper_hf(olp, ecore, one, two, nocc):
 
 def prepare_hf(fname):
     # Input structure
-    mdata = load_mdata(fname)
 
     # Compute Gaussian integrals
     olp = load_olp(fname)  # FIXME: Doesn't take into account basis_str
@@ -122,7 +121,7 @@ def check_core_active(fname, ncore, nactive):
     mdata = load_mdata(fname)
     # Decide how to occupy the orbitals
     assert mdata['numbers'].sum() % 2 == 0
-    nocc = mdata['numbers'].sum() / 2
+    nocc = mdata['numbers'].sum() // 2
     assert ncore + nactive > nocc
 
     enucnuc = load_nn(fname)
@@ -196,7 +195,6 @@ def helper_hf_cholesky(olp, ecore, one, two_vecs, nocc):
 
 def prepare_hf_cholesky(fname):
     # Input structure
-    mdata = load_mdata(fname)
 
     # Compute Gaussian integrals
     olp = load_olp(fname)
@@ -227,7 +225,7 @@ def check_core_active_cholesky(fname, ncore, nactive):
     mdata = load_mdata(fname)
     # Decide how to occupy the orbitals
     assert mdata['numbers'].sum() % 2 == 0
-    nocc = mdata['numbers'].sum() / 2
+    nocc = mdata['numbers'].sum() // 2
     assert ncore + nactive > nocc
 
     energy1, orb_alpha1 = helper_hf_cholesky(olp, enucnuc, one, two_vecs, nocc)

@@ -18,7 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-r'''A light-weight quadratic programming solver
+r"""A light-weight quadratic programming solver
 
    Problems of the following type can be solved:
 
@@ -69,8 +69,7 @@ r'''A light-weight quadratic programming solver
 
    nl
         The number of constraints
-'''
-
+"""
 
 # How to implement the primal feasibility test
 # --------------------------------------------
@@ -88,27 +87,26 @@ r'''A light-weight quadratic programming solver
 
 import numpy as np
 
-
 __all__ = ['QPSolver']
 
 
 class FeasibilityError(Exception):
-    '''Error raised when the problem appears to be infeasible'''
+    """Error raised when the problem appears to be infeasible"""
     pass
 
 
 class BoundedError(Exception):
-    '''Error raised when the problem appears to be unbounded'''
+    """Error raised when the problem appears to be unbounded"""
     pass
 
 
 class ConvergenceError(Exception):
-    '''Error raised when the maximum number of iterations is exceeded'''
+    """Error raised when the maximum number of iterations is exceeded"""
     pass
 
 
 def _counter_to_free(counter, free):
-    '''Convert a positive integer to a decomposition in bits
+    """Convert a positive integer to a decomposition in bits
 
        **Arguments:**
 
@@ -117,15 +115,15 @@ def _counter_to_free(counter, free):
 
        free
             An output array with booleans to store the bits.
-    '''
+    """
     power = 1
-    for j in xrange(len(free)):
+    for j in range(len(free)):
         free[j] = (counter & power) != 0
         power *= 2
 
 
-def find_1d_root(fn, (x0, y0), (x2, y2), eps):
-    '''Find the root of a 1D function
+def find_1d_root(fn, r0, r2, eps):
+    """Find the root of a 1D function
 
        **Arguments:**
 
@@ -137,7 +135,11 @@ def find_1d_root(fn, (x0, y0), (x2, y2), eps):
 
        eps
             The allowed error on the function.
-    '''
+    """
+
+    (x0, y0) = r0
+    (x2, y2) = r2
+
     # we want y0 < 0 and y2 > 0
     if y2 < 0:
         x0, y0, x2, y2 = x2, y2, x0, y0
@@ -147,9 +149,9 @@ def find_1d_root(fn, (x0, y0), (x2, y2), eps):
     while True:
         # When t would be allowed to be close to 0 or 1, slow convergence may
         # occur with exponential-like (very non-linear) functions.
-        t = np.clip(y0/(y0-y2), 0.1, 0.9)
+        t = np.clip(y0 / (y0 - y2), 0.1, 0.9)
         # compute the new point
-        x1 = x0 + t*(x2-x0)
+        x1 = x0 + t * (x2 - x0)
         y1 = fn(x1)
         # decide on convergence or which edge of the bracket to replace
         if abs(y1) < eps:
@@ -161,13 +163,13 @@ def find_1d_root(fn, (x0, y0), (x2, y2), eps):
 
 
 def solve_safe(a, b):
-    '''Try to solve with numpy.linalg.solve. Use SVD as fallback.
+    """Try to solve with numpy.linalg.solve. Use SVD as fallback.
 
        **Arguments:**
 
        a, b
             Arrays for the matrix equation a x = b.
-    '''
+    """
     try:
         # The default is to use the standard solver as it is faster and more
         # accurate than the SVD code below.
@@ -177,15 +179,15 @@ def solve_safe(a, b):
         # that selects the least-norm solution in case of trouble.
         u, s, vt = np.linalg.svd(a, full_matrices=False)
         rank = (s != 0).sum()
-        u = u[:,:rank]
+        u = u[:, :rank]
         s = s[:rank]
         vt = vt[:rank]
         assert s.min() > 0
-        return np.dot(vt.T, np.dot(u.T, b)/s)
+        return np.dot(vt.T, np.dot(u.T, b) / s)
 
 
 def check_constrained_problem(a, b, r=None, s=None):
-    '''Check the matrices of a quadratic problem with linear constraints
+    """Check the matrices of a quadratic problem with linear constraints
 
        **Arguments:**
 
@@ -203,7 +205,7 @@ def check_constrained_problem(a, b, r=None, s=None):
        s
             Targets of equality constraints. Array with shape (nl,).
 
-    '''
+    """
     if r is not None and r.size == 0:
         r = None
     if r is None:
@@ -229,7 +231,7 @@ def check_constrained_problem(a, b, r=None, s=None):
 
 
 def diagonal_form(a, b, r=None, s=None):
-    '''Transform the constrained quadratic problem to an unconstraind diagonal form
+    """Transform the constrained quadratic problem to an unconstraind diagonal form
 
        **Arguments:**
 
@@ -272,7 +274,7 @@ def diagonal_form(a, b, r=None, s=None):
        The solution can be found as follows::
 
            x_diag = b_diag/evals
-    '''
+    """
     a, b, r, s = check_constrained_problem(a, b, r, s)
 
     if r is not None:
@@ -283,9 +285,9 @@ def diagonal_form(a, b, r=None, s=None):
             raise FeasibilityError('Constraints could not be satisfied in diagonal_form.')
         singvals = singvals[:rank]
         u = u[:rank]
-        basis = vt[rank:] # rows are basis of the orthogonal complement
+        basis = vt[rank:]  # rows are basis of the orthogonal complement
         vt = vt[:rank]
-        x0 = np.dot(vt.T, np.dot(u.T, s)/singvals) # particular solution
+        x0 = np.dot(vt.T, np.dot(u.T, s) / singvals)  # particular solution
 
         # it may be that there is not orthogonal complement. handle this nicely
         if basis.size == 0:
@@ -308,7 +310,7 @@ def diagonal_form(a, b, r=None, s=None):
 
 
 def solve_constrained(a, b, r=None, s=None, eps=1e-10):
-    '''Solve the quadratic problem, with linear constraints.
+    """Solve the quadratic problem, with linear constraints.
 
        The equality constraints are honored.
 
@@ -327,14 +329,14 @@ def solve_constrained(a, b, r=None, s=None, eps=1e-10):
 
        s
             Targets of equality constraints. Array with shape (nl,).
-    '''
+    """
     x0, basis, evals, evecs, b_diag = diagonal_form(a, b, r, s)
     if evals is None:
         return x0
     x_diag = np.zeros(b_diag.shape)
-    for i in xrange(len(x_diag)):
+    for i in range(len(x_diag)):
         if evals[i] != 0:
-            x_diag[i] = b_diag[i]/evals[i]
+            x_diag[i] = b_diag[i] / evals[i]
     if x0 is None:
         return np.dot(evecs, x_diag)
     else:
@@ -367,7 +369,7 @@ def solve_constrained(a, b, r=None, s=None, eps=1e-10):
 
 
 def solve_radius(a, b, center, radius, r=None, s=None):
-    '''Solve the quadratic problem, with linear constraints and maximum radius.
+    """Solve the quadratic problem, with linear constraints and maximum radius.
 
        The equality constraints are honored.
 
@@ -393,14 +395,16 @@ def solve_radius(a, b, center, radius, r=None, s=None):
 
        s
             Targets of equality constraints. Array with shape (nl,).
-    '''
+    """
     # A) convert the problem into an unconstrained diagonal form
     x0, basis, evals, evecs, b_diag = diagonal_form(a, b, r, s)
     if evals is None:
         # only one solution is allowed
         min_radius = np.linalg.norm(x0 - center)
         if min_radius > radius:
-            raise FeasibilityError('The constraints to not allow a solution closer to the center than %f > radius.' % min_radius)
+            raise FeasibilityError(
+                'The constraints to not allow a solution closer to the center than '
+                '%f > radius.' % min_radius)
         return x0
     if basis is None:
         b_shift = np.dot(center, evecs)
@@ -411,19 +415,21 @@ def solve_radius(a, b, center, radius, r=None, s=None):
         xc = x0 + np.dot(basis.T, yc)
         min_radius = np.linalg.norm(xc - center)
         if min_radius > radius:
-            raise FeasibilityError('The constraints to not allow a solution closer to the center than %f > radius.' % min_radius)
+            raise FeasibilityError(
+                'The constraints to not allow a solution closer to the center than '
+                '%f > radius.' % min_radius)
         b_shift = np.dot(np.dot(center - x0, basis.T), evecs)
 
     # B) define an error function
     def solve(ridge):
-        '''solution in diagional basis'''
+        """solution in diagional basis"""
         if ridge == 0.0:
-            return b_diag/evals
+            return b_diag / evals
         else:
-            return b_diag/(evals + ridge) + b_shift/(evals/ridge+1)
+            return b_diag / (evals + ridge) + b_shift / (evals / ridge + 1)
 
     def to_orig(x_diag):
-        '''transformation from diagonal to original basis'''
+        """transformation from diagonal to original basis"""
         x_free = np.dot(evecs, x_diag)
         if basis is not None:
             return x0 + np.dot(basis.T, x_free)
@@ -431,7 +437,7 @@ def solve_radius(a, b, center, radius, r=None, s=None):
             return x_free
 
     def compute_error(ridge):
-        '''compute the error on the radius. negative means small than trust radius'''
+        """compute the error on the radius. negative means small than trust radius"""
         x_diag = solve(ridge)
         x = to_orig(x_diag)
         return radius - np.linalg.norm(x - center)
@@ -442,8 +448,8 @@ def solve_radius(a, b, center, radius, r=None, s=None):
         ridge0 = 0.0
         ridge1 = evals_min
     else:
-        ridge0 = -1.1*evals_min
-        ridge1 = -2.2*evals_min
+        ridge0 = -1.1 * evals_min
+        ridge1 = -2.2 * evals_min
 
     error0 = compute_error(ridge0)
     if error0 < 0:
@@ -451,7 +457,7 @@ def solve_radius(a, b, center, radius, r=None, s=None):
         # error to zero
 
         # the error on this root finding problem may be relatively large
-        eps1d = 1e-4*radius
+        eps1d = 1e-4 * radius
 
         # fix right end of the bracket
         error1 = compute_error(ridge1)
@@ -469,11 +475,11 @@ def solve_radius(a, b, center, radius, r=None, s=None):
     return to_orig(solve(ridge))
 
 
+class QPSolver:
+    """A Quadratic Programming Solver"""
 
-class QPSolver(object):
-    '''A Quadratic Programming Solver'''
     def __init__(self, a, b, r=None, s=None, eps=1e-10):
-        r'''The problem is defined as follows;
+        r"""The problem is defined as follows;
 
         .. math::
             \min_x \frac{1}{2} x^T A x - b^T x \\
@@ -494,7 +500,7 @@ class QPSolver(object):
         eps : float
               A general threshold used for several purposes, e.g. the validity of a
               solution.
-        '''
+        """
         a, b, r, s = check_constrained_problem(a, b, r, s)
 
         # assign attributes
@@ -506,24 +512,23 @@ class QPSolver(object):
         # intialize internals
         self._free = None
 
-    def _get_nx(self):
-        '''The number of unkowns'''
+    @property
+    def nx(self):
+        """The number of unkowns"""
         return self.a.shape[0]
 
-    nx = property(_get_nx)
-
-    def _get_nl(self):
-        '''The number of constraints'''
+    @property
+    def nl(self):
+        """The number of constraints"""
         return 0 if self.r is None else self.r.shape[0]
 
-    nl = property(_get_nl)
 
     def compute_cost(self, x):
-        '''Compute the function to be minimized for the given x'''
-        return np.dot(x, 0.5*np.dot(self.a, x) - self.b)
+        """Compute the function to be minimized for the given x"""
+        return np.dot(x, 0.5 * np.dot(self.a, x) - self.b)
 
     def check_feasible(self, x, free=None):
-        '''Check if a solution, x, matches the constraints
+        """Check if a solution, x, matches the constraints
 
            **Arguments:**
 
@@ -536,7 +541,7 @@ class QPSolver(object):
                 When given, it is assumed that the fixed variables must be zero
                 and that the rest can be anything (also negative). When not
                 given, all components of x must be zero or positive.
-        '''
+        """
         if self.nl > 0:
             if abs(np.dot(self.r, x) - self.s).max() > self.eps:
                 raise FeasibilityError('Point does not satisfy equality constraints.')
@@ -547,7 +552,7 @@ class QPSolver(object):
             (x[~free] == 0).all()
 
     def check_solution(self, x):
-        '''Check if a solution, x, is a valid local minimum'''
+        """Check if a solution, x, is a valid local minimum"""
         self.check_feasible(x)
         gradient, rmsd_free, rmsd_frozen, rmsd_neg = self.get_rmsds(x)
         if rmsd_free > self.eps:
@@ -558,7 +563,7 @@ class QPSolver(object):
             raise ValueError('Some components are too negative.')
 
     def get_free_problem(self, free):
-        '''Return the matrix a, b, r and s without the frozen columns/rows
+        """Return the matrix a, b, r and s without the frozen columns/rows
 
            **Arguments:**
 
@@ -577,7 +582,7 @@ class QPSolver(object):
 
            nfree
                 The number of equations due to free components of x.
-        '''
+        """
         assert free.dtype == bool
         # When the free argument has changed, we have to reconstruct the sliced
         # matrices.
@@ -594,7 +599,7 @@ class QPSolver(object):
         return self._a_free, self._b_free, self._r_free, self._s_free
 
     def get_rmsds(self, x):
-        '''Quantify how far x deviates from a local solution
+        """Quantify how far x deviates from a local solution
 
            **Returns:**
 
@@ -610,40 +615,40 @@ class QPSolver(object):
 
            rmsd_neg
                 The rmsd of the negative components of the solution.
-        '''
-        rmsd_neg = np.sqrt((x*x*(x<0)).mean())
+        """
+        rmsd_neg = np.sqrt((x * x * (x < 0)).mean())
         gradient = np.dot(self.a, x) - self.b
         free = x > 0
         if self.nl > 0:
             # subtract the components of the gradient orthogonal to the constraints
             a_free, b_free, r_free, s_free = self.get_free_problem(free)
             g_free = np.dot(a_free, x[free]) - b_free
-            lagrange = np.linalg.lstsq(r_free.T, -g_free)[0]
+            lagrange = np.linalg.lstsq(r_free.T, -g_free, rcond=None)[0]
             gradient += np.dot(self.r.T, lagrange)
-        rmsd_free = np.sqrt((gradient**2*free).mean())
-        rmsd_frozen = np.sqrt((gradient**2*(~free)*(gradient<0)).mean())
+        rmsd_free = np.sqrt((gradient ** 2 * free).mean())
+        rmsd_frozen = np.sqrt((gradient ** 2 * (~free) * (gradient < 0)).mean())
         return gradient, rmsd_free, rmsd_frozen, rmsd_neg
 
     def compute_cn(self, free):
-        '''Compute the condition number of the problem.
+        """Compute the condition number of the problem.
 
            **Arguments:**
 
            free
                 Boolean array with the free components.
-        '''
+        """
         a_free, b_free, r_free, s_free = self.get_free_problem(free)
         x0, basis, evals, evecs, b_diag = diagonal_form(a_free, b_free, r_free, s_free)
         if evals is None:
-            return 0.0 # this happens when the solution is fully constrained.
+            return 0.0  # this happens when the solution is fully constrained.
         abs_evals = abs(evals)
         if abs_evals.min() == 0:
             return np.inf
         else:
-            return abs_evals.max()/abs_evals.min()
+            return abs_evals.max() / abs_evals.min()
 
     def _free_to_full(self, x_free):
-        '''Convert a solution of get_free_system to the original space\
+        """Convert a solution of get_free_system to the original space\
 
            **Arguments:**
 
@@ -652,13 +657,13 @@ class QPSolver(object):
                with solve_constrained or solve_radius
 
            **Returns:** a solution vector x with length nx.
-        '''
+        """
         x = np.zeros(self.nx)
         x[self._free] = x_free
         return x
 
     def solve(self, free):
-        '''Solve the problem, keeping certain components fixed at zero
+        """Solve the problem, keeping certain components fixed at zero
 
            The equality constraints are honored. However, free components may
            become negative. Fixed components are internally excluded from the
@@ -668,13 +673,13 @@ class QPSolver(object):
 
            free
                 Boolean array with the free components
-        '''
+        """
         a_free, b_free, r_free, s_free = self.get_free_problem(free)
         x_free = solve_constrained(a_free, b_free, r_free, s_free, self.eps)
         return self._free_to_full(x_free)
 
     def solve_radius(self, free, center, radius):
-        '''Solve the equations, keeping certain components fixed at zero, with maximum radius.
+        """Solve the equations, keeping certain components fixed at zero, with maximum radius.
 
            The equality constraints are honored. However, free components may
            become negative. Fixed components are internally excluded from the
@@ -691,13 +696,13 @@ class QPSolver(object):
            radius
                 The maximum Euclidean distance of the returned solution x from
                 the given center
-        '''
+        """
         a_free, b_free, r_free, s_free = self.get_free_problem(free)
         x_free = solve_radius(a_free, b_free, center[free], radius, r_free, s_free)
         return self._free_to_full(x_free)
 
     def find_brute(self):
-        '''Brute force solution of the quadratic programming problem
+        """Brute force solution of the quadratic programming problem
 
            **Returns:**
 
@@ -706,10 +711,10 @@ class QPSolver(object):
 
            x
                 The solution vector
-        '''
+        """
         best = None
         free = np.zeros(self.nx, dtype=bool)
-        for counter in xrange(1, 2**self.nx):
+        for counter in range(1, 2 ** self.nx):
             _counter_to_free(counter, free)
             if free.sum() < self.nl:
                 # skip overdetermined constraints
@@ -742,7 +747,7 @@ class QPSolver(object):
         return cost, x
 
     def find_local(self, x, trust_radius, maxiter=None):
-        '''A local solver for the quadratic programming problem
+        """A local solver for the quadratic programming problem
 
            **Arguments:**
 
@@ -769,7 +774,7 @@ class QPSolver(object):
 
            Note that this local search will always lead to the global optimum if
            the matrix :math:`A` is positive definite.
-        '''
+        """
         # keep a copy of the initial guess for debugging.
         guess = x.copy()
 
@@ -778,14 +783,14 @@ class QPSolver(object):
 
         # set maxiter
         if maxiter is None:
-            maxiter = self.nx*10
+            maxiter = self.nx * 10
 
         # get all results associated with x
         free = x != 0.0
         cost = self.compute_cost(x)
 
         # iterative part
-        for counter in xrange(maxiter):
+        for counter in range(maxiter):
             # check for convergence
             gradient, rmsd_free, rmsd_frozen, rmsd_neg = self.get_rmsds(x)
             if (rmsd_free < self.eps) and (rmsd_frozen < self.eps) and (rmsd_neg < self.eps):
@@ -794,7 +799,7 @@ class QPSolver(object):
 
             # deactivate the constraint with the most negative gradient, if any
             if rmsd_free < self.eps:
-                ilow = (gradient*(~free)).argmin()
+                ilow = (gradient * (~free)).argmin()
                 if gradient[ilow] < 0:
                     free[ilow] = True
 
@@ -806,9 +811,9 @@ class QPSolver(object):
             # that is violated, if any. only consider violations in this test
             tmin = 1.0
             imin = None
-            for i in xrange(self.nx):
+            for i in range(self.nx):
                 if free[i] and new_x[i] < 0:
-                    t = x[i]/(x[i] - new_x[i])
+                    t = x[i] / (x[i] - new_x[i])
                     if tmin > t:
                         tmin = t
                         imin = i
@@ -817,7 +822,7 @@ class QPSolver(object):
                 # the line segment.
                 assert tmin > 0.0
                 assert imin is not None
-                new_x = (new_x - x)*tmin + x
+                new_x = (new_x - x) * tmin + x
                 # fix the corresponding violation
                 free[imin] = False
                 # make the corresponding component a hard zero
@@ -828,7 +833,6 @@ class QPSolver(object):
             new_cost = self.compute_cost(new_x)
             assert new_cost - cost < self.eps
 
-
             # let the new x become the current x and update the corresponding
             # quantities
             x = new_x
@@ -838,32 +842,33 @@ class QPSolver(object):
         raise ConvergenceError('Local search failed to converge')
 
     def log(self, x=None):
-        '''Print out the qps for debugging purposes
+        """Print out the qps for debugging purposes
 
            **Optional arguments:**
 
            x
                 An solution vector (that causes problems).
-        '''
+        """
+
         def _print_array(ar):
-            print '    np.array(['
+            print('    np.array([')
             for row in ar:
-                print '        [%s],' % (', '.join(repr(v) for v in row))
-            print '    ]),'
+                print('        [%s],' % (', '.join(repr(v) for v in row)))
+            print('    ]),')
 
         def _print_vector(ve):
-            print '    np.array([%s]),' % (', '.join(repr(v) for v in ve))
+            print('    np.array([%s]),' % (', '.join(repr(v) for v in ve)))
 
-        print '#'*80
-        print 'qps = QPSolver('
+        print('#' * 80)
+        print('qps = QPSolver(')
         _print_array(self.a)
         _print_vector(self.b)
         if self.nl > 0:
             _print_array(self.r)
             _print_vector(self.s)
         else:
-            print 'None, None,'
-        print ')'
+            print('None, None,')
+        print(')')
         if x is not None:
-            print 'x = np.array([%s])' % (', '.join(repr(v) for v in x))
-        print '#'*80
+            print('x = np.array([%s])' % (', '.join(repr(v) for v in x)))
+        print('#' * 80)

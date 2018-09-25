@@ -20,7 +20,6 @@
 # --
 
 
-
 import numpy as np
 from nose.tools import assert_raises
 
@@ -155,7 +154,7 @@ def test_allocation():
     assert (ar1[:] == 0.0).all()
     # try to load it, while it is no longer valid
     with assert_raises(KeyError):
-        ar2 = c.load('egg')
+        c.load('egg')
     # properly load it anew
     ar2, new = c.load('egg', alloc=(5, 10))
     assert new
@@ -169,7 +168,7 @@ def test_allocation():
     ar4, new = c.load('egg', alloc=(5, 1, 2))
     assert new
     assert ar4.shape == (5, 1, 2)
-    assert not ar4 is ar1
+    assert ar4 is not ar1
 
 
 def test_default():
@@ -184,7 +183,7 @@ def test_default():
     with assert_raises(KeyError):
         c.load('egg')
     c.clear()
-    assert c.load('egg', default=None) == None
+    assert c.load('egg', default=None) is None
     with assert_raises(KeyError):
         c.load('egg')
     # with arrays
@@ -246,9 +245,9 @@ def test_iter():
     c = Cache()
     c.dump('foo', 5)
     c.dump('bar', 6)
-    assert sorted(c.iterkeys()) == ['bar', 'foo']
-    assert sorted(c.itervalues()) == [5, 6]
-    assert sorted(c.iteritems()) == [('bar', 6), ('foo', 5)]
+    assert sorted(c.keys()) == ['bar', 'foo']
+    assert sorted(c.values()) == [5, 6]
+    assert sorted(c.items()) == [('bar', 6), ('foo', 5)]
     assert len(c) == 2
     assert sorted(c) == ['bar', 'foo']
 
@@ -259,15 +258,15 @@ def test_iter_tags():
     c.dump('bar', 6)
     c.dump('egg', 7, tags='op')
     c.dump('spam', 8, tags='co')
-    assert sorted(c.iterkeys()) == ['bar', 'egg', 'foo', 'spam']
-    assert sorted(c.itervalues()) == [5, 6, 7, 8]
-    assert sorted(c.iteritems()) == [('bar', 6), ('egg', 7), ('foo', 5), ('spam', 8)]
-    assert sorted(c.iterkeys(tags='c')) == ['foo', 'spam']
-    assert sorted(c.itervalues(tags='c')) == [5, 8]
-    assert sorted(c.iteritems(tags='c')) == [('foo', 5), ('spam', 8)]
-    assert sorted(c.iterkeys(tags='a')) == []
-    assert sorted(c.itervalues(tags='a')) == []
-    assert sorted(c.iteritems(tags='a')) == []
+    assert sorted(c.keys()) == ['bar', 'egg', 'foo', 'spam']
+    assert sorted(c.values()) == [5, 6, 7, 8]
+    assert sorted(c.items()) == [('bar', 6), ('egg', 7), ('foo', 5), ('spam', 8)]
+    assert sorted(c.keys(tags='c')) == ['foo', 'spam']
+    assert sorted(c.values(tags='c')) == [5, 8]
+    assert sorted(c.items(tags='c')) == [('foo', 5), ('spam', 8)]
+    assert sorted(c.keys(tags='a')) == []
+    assert sorted(c.values(tags='a')) == []
+    assert sorted(c.items(tags='a')) == []
     assert len(c) == 4
     assert sorted(c) == ['bar', 'egg', 'foo', 'spam']
 

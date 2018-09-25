@@ -24,12 +24,13 @@ import numpy as np
 from nose.plugins.attrib import attr
 
 from .common import check_hf_cs_hf, check_lih_os_hf, \
-    check_water_cs_hfs, check_n2_cs_hfs, check_h3_os_hfs, check_h3_os_pbe, \
+    check_h3_os_pbe, \
     check_co_cs_pbe, check_water_cs_m05, \
     check_methyl_os_tpss, load_mdata, load_olp, load_kin, load_na, load_er, load_nn, \
     load_orbs_alpha, load_orbs_beta
-from .. import EDIISSCFSolver, NoSCFConvergence, RTwoIndexTerm, RDirectTerm, RExchangeTerm, REffHam, \
-    AufbauOccModel, UTwoIndexTerm, UDirectTerm, UExchangeTerm, UEffHam, guess_core_hamiltonian
+from .. import EDIISSCFSolver, NoSCFConvergence, RTwoIndexTerm, RDirectTerm, RExchangeTerm, \
+    REffHam, AufbauOccModel, UTwoIndexTerm, UDirectTerm, UExchangeTerm, UEffHam, \
+    guess_core_hamiltonian
 
 
 def test_hf_cs_hf():
@@ -38,20 +39,6 @@ def test_hf_cs_hf():
 
 def test_lih_os_hf():
     check_lih_os_hf(EDIISSCFSolver(threshold=1e-7))
-
-
-def test_water_cs_hfs():
-    check_water_cs_hfs(EDIISSCFSolver(threshold=1e-6))
-
-
-@attr('slow')
-def test_n2_cs_hfs():
-    check_n2_cs_hfs(EDIISSCFSolver(threshold=1e-6))
-
-
-@attr('slow')
-def test_h3_os_hfs():
-    check_h3_os_hfs(EDIISSCFSolver(threshold=1e-6))
 
 
 @attr('slow')
@@ -80,7 +67,6 @@ def test_methyl_os_tpss():
 
 def test_interpol_hf_cs_hf():
     fname = 'hf_sto3g_fchk'
-    mdata = load_mdata(fname)
 
     olp = load_olp(fname)
     kin = load_kin(fname)
@@ -102,7 +88,6 @@ def test_interpol_hf_cs_hf():
 
 def test_interpol_lih_os_hf():
     fname = 'li_h_3_21G_hf_g09_fchk'
-    mdata = load_mdata(fname)
 
     olp = load_olp(fname)
     kin = load_kin(fname)
@@ -139,7 +124,7 @@ def check_interpol_hf(ham, orbs, olp, kin, na, occ_model):
     npt = len(alphas)
     energies_approx = np.zeros(npt)
     energies_hf = np.zeros(npt)
-    for ipt in xrange(npt):
+    for ipt in range(npt):
         x[0] = 1 - alphas[ipt]
         x[1] = alphas[ipt]
         energies_approx[ipt] = np.dot(x, 0.5 * np.dot(b, x) - e)
@@ -147,11 +132,11 @@ def check_interpol_hf(ham, orbs, olp, kin, na, occ_model):
         scf_solver._history._build_combinations(x, dms, None)
         ham.reset(*dms)
         energies_hf[ipt] = ham.compute_energy()
-    if False:
-        import matplotlib.pyplot as pt
-        pt.clf()
-        pt.plot(alphas, energies_approx, 'k-', label='approx')
-        pt.plot(alphas, energies_hf, 'r-', label='hf')
-        pt.legend(loc=0)
-        pt.savefig('foo.png')
+    # if False:
+    #     import matplotlib.pyplot as pt
+    #     pt.clf()
+    #     pt.plot(alphas, energies_approx, 'k-', label='approx')
+    #     pt.plot(alphas, energies_hf, 'r-', label='hf')
+    #     pt.legend(loc=0)
+    #     pt.savefig('foo.png')
     assert abs(energies_approx - energies_hf).max() < 1e-6

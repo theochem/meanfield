@@ -19,21 +19,21 @@
 #
 # --
 from contextlib import contextmanager
+from os import path
 
 import matplotlib.pyplot as pt
 import numpy as np
-from os import path
+import pkg_resources
+from gbasis import GOBasis
+from old_grids.grid.molgrid import BeckeMolGrid
 
 from . import gobasis_data
 from . import mol_data as mdata
-from gbasis import GOBasis
-from horton.grid.molgrid import BeckeMolGrid
-from ..builtin import RDiracExchange, UDiracExchange
 from ..convergence import convergence_error_eigen
 from ..gridgroup import RGridGroup, UGridGroup
 from ..guess import guess_core_hamiltonian
 from ..hamiltonian import REffHam, UEffHam
-from ..libxc import RLibXCLDA, ULibXCLDA, RLibXCGGA, ULibXCGGA, \
+from ..libxc import RLibXCGGA, ULibXCGGA, \
     ULibXCMGGA, RLibXCHybridMGGA
 from ..observable import RTwoIndexTerm, RDirectTerm, RExchangeTerm
 from ..observable import UTwoIndexTerm, UDirectTerm, UExchangeTerm
@@ -45,8 +45,8 @@ __all__ = [
     'check_cubic_wrapper', 'check_interpolation', 'check_dot_hessian',
     'check_dot_hessian_polynomial', 'check_solve', 'check_dot_hessian_cache',
     'helper_compute',
-    'check_hf_cs_hf', 'check_lih_os_hf', 'check_water_cs_hfs',
-    'check_n2_cs_hfs', 'check_h3_os_hfs', 'check_h3_os_pbe', 'check_co_cs_pbe',
+    'check_hf_cs_hf', 'check_lih_os_hf',
+    'check_h3_os_pbe', 'check_co_cs_pbe',
     'check_water_cs_m05', 'check_methyl_os_tpss',
 ]
 
@@ -59,7 +59,7 @@ def check_cubic_wrapper(ham, dm0s, dm1s, do_plot=False):
     e0 = ham.compute_energy()
     ham.compute_fock(*focks)
     g0 = 0.0
-    for i in xrange(ham.ndm):
+    for i in range(ham.ndm):
         g0 += np.einsum('ab,ba', focks[i], dm1s[i])
         g0 -= np.einsum('ab,ba', focks[i], dm0s[i])
     g0 *= ham.deriv_scale
@@ -69,7 +69,7 @@ def check_cubic_wrapper(ham, dm0s, dm1s, do_plot=False):
     e1 = ham.compute_energy()
     ham.compute_fock(*focks)
     g1 = 0.0
-    for i in xrange(ham.ndm):
+    for i in range(ham.ndm):
         g1 += np.einsum('ab,ba', focks[i], dm1s[i])
         g1 -= np.einsum('ab,ba', focks[i], dm0s[i])
     g1 *= ham.deriv_scale
@@ -106,7 +106,7 @@ def check_dot_hessian(ham, *dms0):
     """
     assert ham.ndm == len(dms0)
     nbasis = dms0[0].shape[0]
-    focks0 = [np.zeros((nbasis, nbasis)) for _i in xrange(ham.ndm)]
+    focks0 = [np.zeros((nbasis, nbasis)) for _i in range(ham.ndm)]
     ham.reset(*dms0)
     ham.compute_fock(*focks0)
 
@@ -114,13 +114,13 @@ def check_dot_hessian(ham, *dms0):
     nrep = 100
     diffs = np.zeros(nrep)
     errors = np.zeros(nrep)
-    dms1 = [np.zeros((nbasis, nbasis)) for _i in xrange(ham.ndm)]
-    focks1 = [np.zeros((nbasis, nbasis)) for _i in xrange(ham.ndm)]
-    dots0 = [np.zeros((nbasis, nbasis)) for _i in xrange(ham.ndm)]
-    dots1 = [np.zeros((nbasis, nbasis)) for _i in xrange(ham.ndm)]
-    for irep in xrange(nrep):
-        delta_dms = [np.random.normal(0, eps, (nbasis, nbasis)) for _i in xrange(ham.ndm)]
-        for idm in xrange(ham.ndm):
+    dms1 = [np.zeros((nbasis, nbasis)) for _i in range(ham.ndm)]
+    focks1 = [np.zeros((nbasis, nbasis)) for _i in range(ham.ndm)]
+    dots0 = [np.zeros((nbasis, nbasis)) for _i in range(ham.ndm)]
+    dots1 = [np.zeros((nbasis, nbasis)) for _i in range(ham.ndm)]
+    for irep in range(nrep):
+        delta_dms = [np.random.normal(0, eps, (nbasis, nbasis)) for _i in range(ham.ndm)]
+        for idm in range(ham.ndm):
             dms1[idm] = dms0[idm] + delta_dms[idm]
         ham.reset(*dms0)
         ham.reset_delta(*delta_dms)
@@ -133,7 +133,7 @@ def check_dot_hessian(ham, *dms0):
 
         diffsq = 0.0
         errorsq = 0.0
-        for idm in xrange(ham.ndm):
+        for idm in range(ham.ndm):
             tmp1 = focks0[idm] - focks1[idm]
             tmp2 = np.dot(tmp1, dms0[idm])
             diffsq += np.einsum('ab,ab', tmp2, tmp2)
@@ -147,10 +147,10 @@ def check_dot_hessian(ham, *dms0):
     threshold = np.median(diffs) * 0.1
     mask = diffs > threshold
 
-    assert abs(errors[mask]).max() < threshold, (
-                                                    'The first order approximation off the difference between Fock matrices is too '
-                                                    'wrong.\nThe threshold is %.1e.\nDiffs and Errors are:\n%s') % \
-                                                (threshold, np.array([diffs, errors]).T)
+    assert abs(errors[mask]).max() < threshold, \
+        ('The first order approximation off the difference between Fock matrices is too '
+         'wrong.\nThe threshold is %.1e.\nDiffs and Errors '
+         'are:\n%s') % (threshold, np.array([diffs, errors]).T)
 
 
 def check_dot_hessian_polynomial(olp, core, ham, orbs, is_hf=True, extent=1.0,
@@ -200,7 +200,7 @@ def check_dot_hessian_polynomial(olp, core, ham, orbs, is_hf=True, extent=1.0,
         ham.compute_fock(*focks_a)
 
         delta_dms = []
-        for idm in xrange(ham.ndm):
+        for idm in range(ham.ndm):
             delta_dms.append(dms_b[idm] - dms_a[idm])
         ham.reset_delta(*delta_dms)
         dots_a = [np.zeros(dm_a.shape) for dm_a in dms_a]
@@ -208,7 +208,7 @@ def check_dot_hessian_polynomial(olp, core, ham, orbs, is_hf=True, extent=1.0,
 
         energy_a_1 = 0.0
         energy_a_2 = 0.0
-        for idm in xrange(ham.ndm):
+        for idm in range(ham.ndm):
             energy_a_1 += np.einsum('ab,ba', focks_a[idm], delta_dms[idm]) * ham.deriv_scale
             energy_a_2 += np.einsum('ab,ba', dots_a[idm], delta_dms[idm]) * ham.deriv_scale ** 2
 
@@ -221,16 +221,16 @@ def check_dot_hessian_polynomial(olp, core, ham, orbs, is_hf=True, extent=1.0,
         energies_2nd_order = np.zeros(npoint)
         derivs_x = np.zeros(npoint)
         derivs_2nd_order = np.zeros(npoint)
-        for ipoint in xrange(npoint):
+        for ipoint in range(npoint):
             x = xs[ipoint]
             dms_x = []
-            for idm in xrange(ham.ndm):
+            for idm in range(ham.ndm):
                 dm_x = dms_a[idm] * (1 - x) + dms_b[idm] * x
                 dms_x.append(dm_x)
             ham.reset(*dms_x)
             energies_x[ipoint] = ham.compute_energy()
             ham.compute_fock(*focks_a)
-            for idm in xrange(ham.ndm):
+            for idm in range(ham.ndm):
                 derivs_x[ipoint] += np.einsum('ab,ba', focks_a[idm], delta_dms[idm]) * \
                                     ham.deriv_scale
 
@@ -277,13 +277,13 @@ def check_dot_hessian_cache(ham, *dms):
     ham.reset(*dms)
     focks = [np.zeros(dm.shape) for dm in dms]
     ham.compute_fock(*focks)
-    keys0 = sorted(ham.cache.iterkeys())
+    keys0 = sorted(ham.cache.keys())
 
     # Do a dot-hessian. Check that some extra elements are present in cache
     ham.reset_delta(*focks)
     dots = [np.zeros(dm.shape) for dm in dms]
     ham.compute_dot_hessian(*dots)
-    keys1 = sorted(ham.cache.iterkeys())
+    keys1 = sorted(ham.cache.keys())
     assert len(keys0) < len(keys1)
     for key in keys0:
         assert key in keys1
@@ -292,7 +292,7 @@ def check_dot_hessian_cache(ham, *dms):
     # Check that the original list of keys is restored.
     # Keys starting with 'kernel' are allowed.
     ham.cache.clear(tags='d')
-    keys2 = sorted(key for key in ham.cache.iterkeys() if not key.startswith('kernel'))
+    keys2 = sorted(key for key in ham.cache.keys() if not key.startswith('kernel'))
     assert keys0 == keys2
 
 
@@ -309,9 +309,9 @@ def check_solve(ham, scf_solver, occ_model, olp, kin, na, *orbs):
         assert scf_solver.error(ham, olp, *dms) > scf_solver.threshold
         scf_solver(ham, olp, occ_model, *dms)
         assert scf_solver.error(ham, olp, *dms) < scf_solver.threshold
-        focks = [np.zeros(dms[0].shape) for i in xrange(ham.ndm)]
+        focks = [np.zeros(dms[0].shape) for i in range(ham.ndm)]
         ham.compute_fock(*focks)
-        for i in xrange(ham.ndm):
+        for i in range(ham.ndm):
             orbs[i].from_fock(focks[i], olp)
         occ_model.assign(*orbs)
 
@@ -404,217 +404,6 @@ def check_lih_os_hf(scf_solver):
     assert abs(ham.cache['energy_hartree'] + ham.cache['energy_x_hf'] - 2.114420907894E+00) < 1e-7
     assert abs(ham.cache['energy_ne'] - -1.811548789281E+01) < 2e-7
     assert abs(ham.cache['energy_nn'] - 0.6731318487) < 1e-8
-
-
-def check_water_cs_hfs(scf_solver):
-    fname = 'water_hfs_321g_fchk'
-    mdata = load_mdata(fname)
-
-    grid = BeckeMolGrid(mdata['coordinates'], mdata['numbers'], mdata['pseudo_numbers'],
-                        random_rotate=False)
-    olp = load_olp(fname)
-    kin = load_kin(fname)
-    na = load_na(fname)
-    er = load_er(fname)
-
-    external = {'nn': load_nn(fname)}
-    terms = [
-        RTwoIndexTerm(kin, 'kin'),
-        RDirectTerm(er, 'hartree'),
-        RGridGroup(get_obasis(fname), grid, [
-            RDiracExchange(),
-        ]),
-        RTwoIndexTerm(na, 'ne'),
-    ]
-    ham = REffHam(terms, external)
-    orb_alpha = load_orbs_alpha(fname)
-
-    # The convergence should be reasonable, not perfect because of limited
-    # precision in Gaussian fchk file and different integration grids:
-    assert convergence_error_eigen(ham, olp, orb_alpha) < 3e-5
-
-    # Recompute the orbitals and orbital energies. This should be reasonably OK.
-    dm_alpha = load_orbsa_dms(fname)
-    ham.reset(dm_alpha)
-    ham.compute_energy()
-    fock_alpha = np.zeros(dm_alpha.shape)
-    ham.compute_fock(fock_alpha)
-    orb_alpha.from_fock(fock_alpha, olp)
-
-    expected_energies = np.array([
-        -1.83691041E+01, -8.29412411E-01, -4.04495188E-01, -1.91740814E-01,
-        -1.32190590E-01, 1.16030419E-01, 2.08119657E-01, 9.69825207E-01,
-        9.99248500E-01, 1.41697384E+00, 1.47918828E+00, 1.61926596E+00,
-        2.71995350E+00
-    ])
-
-    assert abs(load_orbs_alpha(fname).energies - expected_energies).max() < 2e-4
-    assert abs(ham.cache['energy_ne'] - -1.977921986200E+02) < 1e-7
-    assert abs(ham.cache['energy_kin'] - 7.525067610865E+01) < 1e-9
-    assert abs(
-        ham.cache['energy_hartree'] + ham.cache['energy_x_dirac'] - 3.864299848058E+01) < 2e-4
-    assert abs(ham.cache['energy'] - -7.474134898935590E+01) < 2e-4
-    assert abs(ham.cache['energy_nn'] - 9.1571750414) < 2e-8
-
-    # Converge from scratch and check energies
-    occ_model = AufbauOccModel(5)
-    check_solve(ham, scf_solver, occ_model, olp, kin, na, load_orbs_alpha(fname))
-
-    ham.compute_energy()
-    assert abs(ham.cache['energy_ne'] - -1.977921986200E+02) < 1e-4
-    assert abs(ham.cache['energy_kin'] - 7.525067610865E+01) < 1e-4
-    assert abs(
-        ham.cache['energy_hartree'] + ham.cache['energy_x_dirac'] - 3.864299848058E+01) < 2e-4
-    assert abs(ham.cache['energy'] - -7.474134898935590E+01) < 2e-4
-
-
-def check_n2_cs_hfs(scf_solver):
-    fname = 'n2_hfs_sto3g_fchk'
-    mdata = load_mdata(fname)
-    grid = BeckeMolGrid(mdata['coordinates'], mdata['numbers'], mdata['pseudo_numbers'], 'veryfine',
-                        random_rotate=False)
-    olp = load_olp(fname)
-    kin = load_kin(fname)
-    na = load_na(fname)
-    er = load_er(fname)
-    external = {'nn': load_nn(fname)}
-
-    libxc_term = RLibXCLDA('x')
-    terms1 = [
-        RTwoIndexTerm(kin, 'kin'),
-        RDirectTerm(er, 'hartree'),
-        RGridGroup(get_obasis(fname), grid, [libxc_term]),
-        RTwoIndexTerm(na, 'ne'),
-    ]
-    ham1 = REffHam(terms1, external)
-
-    builtin_term = RDiracExchange()
-    terms2 = [
-        RTwoIndexTerm(kin, 'kin'),
-        RDirectTerm(er, 'hartree'),
-        RGridGroup(get_obasis(fname), grid, [builtin_term]),
-        RTwoIndexTerm(na, 'ne'),
-    ]
-    ham2 = REffHam(terms2, external)
-
-    # Compare the potential computed by libxc with the builtin implementation
-    energy1, focks1 = helper_compute(ham1, load_orbs_alpha(fname))
-    energy2, focks2 = helper_compute(ham2, load_orbs_alpha(fname))
-    libxc_pot = ham1.cache.load('pot_libxc_lda_x_alpha')
-    builtin_pot = ham2.cache.load('pot_x_dirac_alpha')
-    # Libxc apparently approximates values of the potential below 1e-4 with zero.
-    assert abs(libxc_pot - builtin_pot).max() < 1e-4
-    # Check of the libxc energy matches our implementation
-    assert abs(energy1 - energy2) < 1e-10
-    ex1 = ham1.cache['energy_libxc_lda_x']
-    ex2 = ham2.cache['energy_x_dirac']
-    assert abs(ex1 - ex2) < 1e-10
-
-    # The convergence should be reasonable, not perfect because of limited
-    # precision in Gaussian fchk file:
-    assert convergence_error_eigen(ham1, olp, load_orbs_alpha(fname)) < 1e-5
-    assert convergence_error_eigen(ham2, olp, load_orbs_alpha(fname)) < 1e-5
-
-    occ_model = AufbauOccModel(7)
-    for ham in ham1, ham2:
-        # Converge from scratch
-        check_solve(ham, scf_solver, occ_model, olp, kin, na, load_orbs_alpha(fname))
-
-        # test orbital energies
-        expected_energies = np.array([
-            -1.37107053E+01, -1.37098006E+01, -9.60673085E-01, -3.57928483E-01,
-            -3.16017655E-01, -3.16017655E-01, -2.12998316E-01, 6.84030479E-02,
-            6.84030479E-02, 7.50192517E-01,
-        ])
-        assert abs(load_orbs_alpha(fname).energies - expected_energies).max() < 3e-5
-
-        ham.compute_energy()
-        assert abs(ham.cache['energy_ne'] - -2.981579553570E+02) < 1e-5
-        assert abs(ham.cache['energy_kin'] - 1.061620887711E+02) < 1e-5
-        assert abs(ham.cache['energy'] - -106.205213597) < 1e-4
-        assert abs(ham.cache['energy_nn'] - 23.3180604505) < 1e-8
-    assert abs(
-        ham1.cache['energy_hartree'] + ham1.cache['energy_libxc_lda_x'] - 6.247259253877E+01) < 1e-4
-    assert abs(
-        ham2.cache['energy_hartree'] + ham2.cache['energy_x_dirac'] - 6.247259253877E+01) < 1e-4
-
-
-def check_h3_os_hfs(scf_solver):
-    fname = 'h3_hfs_321g_fchk'
-    mdata = load_mdata(fname)
-    grid = BeckeMolGrid(mdata['coordinates'], mdata['numbers'], mdata['pseudo_numbers'], 'veryfine',
-                        random_rotate=False)
-    olp = load_olp(fname)
-    kin = load_kin(fname)
-    na = load_na(fname)
-    er = load_er(fname)
-    external = {'nn': load_nn(fname)}
-
-    libxc_term = ULibXCLDA('x')
-    terms1 = [
-        UTwoIndexTerm(kin, 'kin'),
-        UDirectTerm(er, 'hartree'),
-        UGridGroup(get_obasis(fname), grid, [libxc_term]),
-        UTwoIndexTerm(na, 'ne'),
-    ]
-    ham1 = UEffHam(terms1, external)
-
-    builtin_term = UDiracExchange()
-    terms2 = [
-        UTwoIndexTerm(kin, 'kin'),
-        UDirectTerm(er, 'hartree'),
-        UGridGroup(get_obasis(fname), grid, [builtin_term]),
-        UTwoIndexTerm(na, 'ne'),
-    ]
-    ham2 = UEffHam(terms2, external)
-
-    # Compare the potential computed by libxc with the builtin implementation
-    energy1, focks1 = helper_compute(ham1, load_orbs_alpha(fname), load_orbs_beta(fname))
-    energy2, focks2 = helper_compute(ham2, load_orbs_alpha(fname), load_orbs_beta(fname))
-    libxc_pot = ham1.cache.load('pot_libxc_lda_x_both')[:, 0]
-    builtin_pot = ham2.cache.load('pot_x_dirac_alpha')
-    # Libxc apparently approximates values of the potential below 1e-4 with zero.
-    assert abs(libxc_pot - builtin_pot).max() < 1e-4
-    # Check of the libxc energy matches our implementation
-    assert abs(energy1 - energy2) < 1e-10
-    ex1 = ham1.cache['energy_libxc_lda_x']
-    ex2 = ham2.cache['energy_x_dirac']
-    assert abs(ex1 - ex2) < 1e-10
-
-    # The convergence should be reasonable, not perfect because of limited
-    # precision in Gaussian fchk file:
-    assert convergence_error_eigen(ham1, olp, load_orbs_alpha(fname), load_orbs_beta(fname)) < 1e-5
-    assert convergence_error_eigen(ham2, olp, load_orbs_alpha(fname), load_orbs_beta(fname)) < 1e-5
-
-    occ_model = AufbauOccModel(2, 1)
-    for ham in ham1, ham2:
-        # Converge from scratch
-        check_solve(ham, scf_solver, occ_model, olp, kin, na, load_orbs_alpha(fname),
-                    load_orbs_beta(fname))
-
-        # test orbital energies
-        expected_energies = np.array([
-            -4.93959157E-01, -1.13961330E-01, 2.38730924E-01, 7.44216538E-01,
-            8.30143356E-01, 1.46613581E+00
-        ])
-        assert abs(load_orbs_alpha(fname).energies - expected_energies).max() < 1e-5
-        expected_energies = np.array([
-            -4.34824166E-01, 1.84114514E-04, 3.24300545E-01, 7.87622756E-01,
-            9.42415831E-01, 1.55175481E+00
-        ])
-        assert abs(load_orbs_beta(fname).energies - expected_energies).max() < 1e-5
-
-        ham.compute_energy()
-        # compare with g09
-        assert abs(ham.cache['energy_ne'] - -6.832069993374E+00) < 1e-5
-        assert abs(ham.cache['energy_kin'] - 1.870784279014E+00) < 1e-5
-        assert abs(ham.cache['energy'] - -1.412556114057104E+00) < 1e-5
-        assert abs(ham.cache['energy_nn'] - 1.8899186021) < 1e-8
-
-    assert abs(
-        ham1.cache['energy_hartree'] + ham1.cache['energy_libxc_lda_x'] - 1.658810998195E+00) < 1e-6
-    assert abs(
-        ham2.cache['energy_hartree'] + ham2.cache['energy_x_dirac'] - 1.658810998195E+00) < 1e-6
 
 
 def check_co_cs_pbe(scf_solver):
@@ -886,8 +675,7 @@ def check_methyl_os_tpss(scf_solver):
 
 
 def _compose_fn(subpath, fn, ext=".npy"):
-    cur_pth = path.split(__file__)[0]
-    pth = cur_pth + "/cached/{}/{}{}".format(fn, subpath, ext)
+    pth = pkg_resources.resource_filename(f"meanfield.test.data.{fn}", f"{subpath}{ext}")
     return np.load(pth).astype(np.float64)
 
 

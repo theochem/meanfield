@@ -62,11 +62,18 @@ class GridGroup(Observable):
         """
         self.grid_terms = grid_terms
         self.obasis = obasis
+        assert self._grid_compatible(grid)
         self.grid = grid
         self.density_cutoff = density_cutoff
         Observable.__init__(self, label)
 
-    def _get_df_level(self):
+    @staticmethod
+    def _grid_compatible(grid):
+        """Check whether the grid object contains the attributes necessary for compatibility."""
+        return hasattr(grid, "size") and hasattr(grid, "points") and hasattr(grid, "weights")
+
+    @property
+    def df_level(self):
         """The density-functional level of this grid group.
 
         Returns
@@ -79,8 +86,6 @@ class GridGroup(Observable):
             * ``DF_LEVEL_MGGA``: MGGA (and LDA and/or GGA) functionals are used.
         """
         return max([grid_term.df_level for grid_term in self.grid_terms])
-
-    df_level = property(_get_df_level)
 
     def _get_potentials(self, cache, label='pot', tags=None):
         """Get list of output arrays passed to ```GridObservable.add_pot```.
@@ -131,19 +136,29 @@ class GridGroup(Observable):
                                          alloc=(self.grid.size, 1), tags=tags)
             if new:
                 dm = cache['%sdm_%s' % (prefix, select)]
-                self.obasis.compute_grid_density_dm(dm, self.grid.points, all_basics[:, 0])
+                try:
+                    self.obasis.compute_grid_density_dm(dm, self.grid.points, all_basics[:, 0])
+                except AttributeError:
+                    raise AttributeError("Obasis class has not implemented "
+                                         "'compute_grid_density_dm'")
         elif self.df_level == DF_LEVEL_GGA:
             all_basics, new = cache.load('%sall_%s' % (prefix, select),
                                          alloc=(self.grid.size, 4), tags=tags)
             if new:
                 dm = cache['%sdm_%s' % (prefix, select)]
-                self.obasis.compute_grid_gga_dm(dm, self.grid.points, all_basics)
+                try:
+                    self.obasis.compute_grid_gga_dm(dm, self.grid.points, all_basics)
+                except AttributeError:
+                    raise AttributeError("Obasis class has not implemented 'compute_grid_gga_dm'")
         elif self.df_level == DF_LEVEL_MGGA:
             all_basics, new = cache.load('%sall_%s' % (prefix, select),
                                          alloc=(self.grid.size, 6), tags=tags)
             if new:
                 dm = cache['%sdm_%s' % (prefix, select)]
-                self.obasis.compute_grid_mgga_dm(dm, self.grid.points, all_basics)
+                try:
+                    self.obasis.compute_grid_mgga_dm(dm, self.grid.points, all_basics)
+                except AttributeError:
+                    raise AttributeError("Obasis class has not implemented 'compute_grid_mgga_dm'")
         else:
             raise ValueError('Internal error: non-existent DF level.')
 
@@ -215,19 +230,32 @@ class GridGroup(Observable):
         focks : list of TwoIndex
             A list of Fock matrices.
         """
-        for ichannel in xrange(len(focks)):
+        for ichannel in range(len(focks)):
             if self.df_level == DF_LEVEL_LDA:
-                self.obasis.compute_grid_density_fock(
-                    self.grid.points, self.grid.weights,
-                    pots[ichannel][:, 0], focks[ichannel])
+                try:
+                    self.obasis.compute_grid_density_fock(
+                        self.grid.points, self.grid.weights,
+                        pots[ichannel][:, 0], focks[ichannel])
+                except AttributeError:
+                    raise AttributeError(
+                        "Obasis object has not implemented 'compute_grid_density_fock'")
+
             elif self.df_level == DF_LEVEL_GGA:
-                self.obasis.compute_grid_gga_fock(
-                    self.grid.points, self.grid.weights,
-                    pots[ichannel], focks[ichannel])
+                try:
+                    self.obasis.compute_grid_gga_fock(
+                        self.grid.points, self.grid.weights,
+                        pots[ichannel], focks[ichannel])
+                except AttributeError:
+                    raise AttributeError(
+                        "Obasis object has not implemented 'compute_grid_gga_fock'")
             elif self.df_level == DF_LEVEL_MGGA:
-                self.obasis.compute_grid_mgga_fock(
-                    self.grid.points, self.grid.weights,
-                    pots[ichannel], focks[ichannel])
+                try:
+                    self.obasis.compute_grid_mgga_fock(
+                        self.grid.points, self.grid.weights,
+                        pots[ichannel], focks[ichannel])
+                except AttributeError:
+                    raise AttributeError(
+                        "Obasis object has not implemeneted 'compute_grid_mgga_fock'")
 
     def add_fock(self, cache, *focks):
         """Add contributions to the Fock matrix.
@@ -514,7 +542,7 @@ class UGridGroup(GridGroup):
                 tau_both[:, 1] = all_beta[:, 5]
 
 
-class GridObservable(object):
+class GridObservable:
     """Base class for contributions to the GridGroup object."""
 
     df_level = None

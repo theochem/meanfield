@@ -57,7 +57,7 @@ def compute_dm_full(cache, prefix='', tags=None):
     return dm_full
 
 
-class Observable(object):
+class Observable:
     """Base class for contribution to EffHam classes.
 
     These are usually energy expressions (as function of one or more density matrices).

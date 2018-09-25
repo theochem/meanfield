@@ -20,6 +20,7 @@
 # --
 """Definition of all exceptions in Meanfield"""
 
+
 class ElectronCountError(ValueError):
     """Exception raised when a negative number of electron is encountered, or
        when more electrons than basis functions are requested.

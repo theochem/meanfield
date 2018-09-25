@@ -66,24 +66,24 @@ cdef extern from "xc.h":
     double xc_hyb_exx_coef(xc_func_type *p)
     double xc_hyb_cam_coef(const xc_func_type *p, double *omega, double *alpha, double *beta)
 
-cdef class LibXCWrapper(object):
+cdef class LibXCWrapper:
     """Base class for restricted and unrestricted LibXC wrappers."""
 
     cdef xc_func_type _func
     cdef int _func_id
-    cdef bytes _key
+    cdef unicode _key
 
-    def __cinit__(self, bytes key):
+    def __cinit__(self, unicode key):
         """Initialize a LibXCWrapper.
 
         Parameters
         ----------
-        key : str
+        key
             The name of the functional in LibXC, e.g. `"lda_x"`.
         """
         self._key = key
         self._func_id = -1
-        self._func_id = xc_functional_get_number(key)
+        self._func_id = xc_functional_get_number(key.encode("utf-8"))
         if self._func_id < 0:
             raise ValueError('Unknown LibXC functional: %s' % key)
 
@@ -108,7 +108,7 @@ cdef class LibXCWrapper(object):
 
     property name:
         def __get__(self):
-            return self._func.info[0].name
+            return self._func.info[0].name.decode("utf-8")
 
     property family:
         def __get__(self):
@@ -123,9 +123,9 @@ cdef class LibXCWrapper(object):
                 ref = self._func.info[0].refs[i]
                 if ref != NULL:
                     result.append([
-                        ref[0].ref.strip(),
-                        ref[0].doi.strip(),
-                        ref[0].bibtex.strip()])
+                        ref[0].ref.strip().decode("utf-8"),
+                        ref[0].doi.strip().decode("utf-8"),
+                        ref[0].bibtex.strip().decode("utf-8")])
             return result
 
     ## HYB GGA
@@ -153,12 +153,12 @@ cdef class LibXCWrapper(object):
         return omega, alpha, beta
 
 cdef class RLibXCWrapper(LibXCWrapper):
-    def __cinit__(self, bytes key):
+    def __cinit__(self, unicode key):
         """Initialize a RLibXCWrapper.
 
         Parameters
         ----------
-        key : str
+        key
             The name of the functional in LibXC, e.g. `"lda_x"`.
         """
         retcode = xc_func_init(&self._func, self._func_id, XC_UNPOLARIZED)
@@ -393,7 +393,7 @@ cdef class RLibXCWrapper(LibXCWrapper):
                     &vsigma[0], &vlapl[0], &vtau[0])
 
 cdef class ULibXCWrapper(LibXCWrapper):
-    def __cinit__(self, bytes key):
+    def __cinit__(self, unicode key):
         """Initialize a ULibXCWrapper.
 
         Parameters
@@ -569,7 +569,7 @@ cdef class ULibXCWrapper(LibXCWrapper):
             The reduced density gradient norms (alpha, alpha), (alpha, beta) and (beta, beta).
         lapl : np.ndarray, shape=(npoint, 2)
             The laplacian of the alpha and beta density.
-        tau : np.ndarray, shape=(npoint, 2)
+        kin : np.ndarray, shape=(npoint, 2)
             The alpha and beta kinetic energy density.
         vrho : np.ndarray, shape=(npoint, 2)
             The derivative of the energy w.r.t. the alpha and beta electron density.

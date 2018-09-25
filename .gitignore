@@ -12,6 +12,3 @@ dist/
 
 # Sphinx documentation
 doc/_build/
-
-pycydemo/extension.c
-pycydemo/version.py

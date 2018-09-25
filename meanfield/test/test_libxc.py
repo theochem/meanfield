@@ -20,11 +20,10 @@
 # --
 
 
-
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_raises
 
-from horton.grid import BeckeMolGrid
+from old_grids.grid import BeckeMolGrid
 from .common import check_interpolation, \
     check_dot_hessian, check_dot_hessian_polynomial, check_dot_hessian_cache, load_olp, load_kin, \
     load_na, get_obasis, load_mdata, load_orbs_alpha, load_orbsa_dms, load_orbs_beta, \
@@ -424,7 +423,7 @@ ref_lda_x_1 = """\
 ref_lda_x_2 = """\
 @article{Bloch1929_545,
   title = {Bemerkung zur Elektronentheorie des Ferromagnetismus und der elektrischen \
-Leitf\xc3\xa4higkeit},
+Leitfähigkeit},
   author = {F. Bloch},
   journal = {Z. Phys.},
   volume = {57},

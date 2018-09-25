@@ -153,7 +153,7 @@ def transform_integrals(one, two, method='tensordot', *orbs):
             # Note that integrals are stored using physics' convention <12|12>
             two_mo.append(four_index_transform(two, orb0, orb1, orb0, orb1, method))
         # Transform 1-electron part
-        one_mo.append(reduce(np.dot, [orb0.coeffs.T, one, orb0.coeffs]))
+        one_mo.append(np.einsum("ia,ij,jb", orb0.coeffs, one, orb0.coeffs, optimize=True))
     return one_mo, two_mo
 
 
@@ -164,8 +164,10 @@ def split_core_active(one, two, ecore, orb, ncore, nactive, indextrans='tensordo
 
     Parameters
     ----------
-    one/two
-        One and two-electron integrals.
+    one
+        One-electron integrals
+    two
+        Two-electron integrals
     ecore
         The core energy of the given Hamiltonian. In the case of a standard
         molecular system, this is the nuclear nuclear repulsion.
@@ -282,7 +284,7 @@ def transform_integrals_cholesky(one, two, method='tensordot', *orbs):
     one_mo = []
     for orb0 in orbs:
         two_mo.append(four_index_transform_cholesky(two, orb0, orb0, method))
-        one_mo.append(reduce(np.dot, [orb0.coeffs.T, one, orb0.coeffs]))
+        one_mo.append(np.einsum("ia,ij,jb", orb0.coeffs, one, orb0.coeffs, optimize=True))
     return one_mo, two_mo
 
 
@@ -293,8 +295,10 @@ def split_core_active_cholesky(one, two, ecore, orb, ncore, nactive, indextrans=
 
     Parameters
     ----------
-    one/two
-        One and two-electron integrals. A Cholesky decomposition of the two-electron
+    one
+        One-electron integrals.
+    two
+        Two-electron integrals. A Cholesky decomposition of the two-electron
         integrals must be provided.
     ecore
         The core energy of the given Hamiltonian. In the case of a standard

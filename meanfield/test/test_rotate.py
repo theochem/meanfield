@@ -20,12 +20,11 @@
 # --
 
 
-
 import numpy as np
 from nose.plugins.attrib import attr
 
 from .common import load_kin, load_orbs_alpha, load_olp, get_obasis
-from horton.grid import get_random_rotation  # TODO: Remove random rotation?
+from old_grids.grid import get_random_rotation  # TODO: Remove random rotation?
 from .. import Orbitals
 from ..rotate import rotate_coeffs
 
@@ -35,7 +34,7 @@ def test_rotation_energy():
     fname = 'he_spdf_orbital_fchk'
     kin = load_kin(fname)
     e0 = np.einsum('ab,ba', kin, load_orbs_alpha(fname).to_dm())
-    for irep in xrange(100):
+    for irep in range(100):
         rmat = get_random_rotation()
         orb_alpha = load_orbs_alpha(fname)
         orb_alpha.coeffs[:] = rotate_coeffs(load_orbs_alpha(fname).coeffs,
@@ -77,7 +76,7 @@ def test_rotation_orthonormal():
         rmat = get_random_rotation()
         # rmat = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
         # rmat = get_rotation_matrix(np.array([0, 0, 1]), np.pi/4)
-        shell_types = np.array([0, 0, 0, 0, 1, 1, 1, 2, 2, 3])  # From test system
+        shell_types = np.array([0, 0, 0, 0, 1, 1, 1, 2, 2, 3], dtype=int)  # From test system
         orb.coeffs[:, :norb] = rotate_coeffs(orb.coeffs[:, :norb], shell_types, rmat)
         orb.check_normalization(overlap)
 

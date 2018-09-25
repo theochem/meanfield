@@ -28,7 +28,7 @@ def grep_file():
 
                 if "test/" in i:
                     fn, san_fn = sanitize_fn(i)
-                    print fn, san_fn
+                    print(fn, san_fn)
                     filenames.append((fn, san_fn))
 
     # with open("test_utils.py") as fh:
@@ -54,12 +54,12 @@ def grep_file():
 
         if "fchk" in san_fn:
             flog = fn[:-4] + "log"
-            print fn, flog
+            print(fn, flog)
             try:
                 mol = IOData.from_file(context.get_fn(fn), context.get_fn(flog))
                 save_ints(mol, san_fn)
             except IOError:
-                print "No log file", flog
+                print("No log file", flog)
                 mol = IOData.from_file(context.get_fn(fn))
                 save_ints(mol, san_fn)
                 pass
@@ -72,9 +72,9 @@ def grep_file():
             try:
                 i(mol, san_fn)
             except AttributeError:
-                print "Error on", i, san_fn
+                print("Error on", i, san_fn)
                 pass
-        print "-" * 80
+        print("-" * 80)
 
     print("Processed:")
     for f in filenames:
@@ -108,21 +108,21 @@ def save_ints(mol, san_fn):
         try:
             np.save("{}/{}".format("cached/" + san_fn, i), getattr(mol, i))
         except AttributeError:
-            print "Generating ints", i, "on", san_fn
+            print("Generating ints", i, "on", san_fn)
             if i == "two_mo":
                 continue
 
             if i == "na":
-                int = getattr(mol.obasis, lookup[i])(mol.coordinates, mol.pseudo_numbers)
+                integral = getattr(mol.obasis, lookup[i])(mol.coordinates, mol.pseudo_numbers)
             else:
-                int = getattr(mol.obasis, lookup[i])()
-            np.save("{}/{}".format("cached/" + san_fn, i), int)
+                integral = getattr(mol.obasis, lookup[i])()
+            np.save("{}/{}".format("cached/" + san_fn, i), integral)
             pass
 
 
 def save_gobasis_params(mol, san_fn):
     obasis = mol.obasis
-    print san_fn + " = ",
+    print(san_fn + " = ", end=' ')
     print(obasis.centers, obasis.shell_map, obasis.nprims, obasis.shell_types, obasis.alphas,
           obasis.con_coeffs)
 
@@ -150,7 +150,7 @@ def save_moldata(mol, san_fn):
          "numbers": mol.numbers,
          "pseudo_numbers": mol.pseudo_numbers,
          "nucnuc": compute_nucnuc(mol.coordinates, mol.pseudo_numbers)}
-    print san_fn + "=",
+    print(san_fn + "=", end=' ')
     print(d)
 
 

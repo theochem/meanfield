@@ -24,7 +24,7 @@ import numpy as np
 
 __all__ = [
     'get_level_shift', 'get_spin', 'get_homo_lumo',
-    'compute_commutator',
+    'compute_commutator', 'doc_inherit',
 ]
 
 boltzmann = 3.1668154051341965e-06
@@ -63,10 +63,10 @@ def get_spin(orb_alpha, orb_beta, overlap):
     nbeta = orb_beta.occupations.sum()
     sz = (nalpha - nbeta) / 2
     correction = 0.0
-    for ialpha in xrange(orb_alpha.nfn):
+    for ialpha in range(orb_alpha.nfn):
         if orb_alpha.occupations[ialpha] == 0.0:
             continue
-        for ibeta in xrange(orb_beta.nfn):
+        for ibeta in range(orb_beta.nfn):
             if orb_beta.occupations[ibeta] == 0.0:
                 continue
             correction += np.dot(
@@ -74,7 +74,7 @@ def get_spin(orb_alpha, orb_beta, overlap):
                 np.dot(overlap, orb_beta.coeffs[:, ibeta])) ** 2
 
     ssq = sz * (sz + 1) + nbeta - correction
-    print sz, ssq
+    print(sz, ssq)
     return sz, ssq
 
 
@@ -89,8 +89,8 @@ def get_homo_lumo(*orbs):
        **Returns:** homo_energy, lumo_energy. (The second is None when all
        orbitals are occupied.)
     """
-    homo_energy = max(orb.homo_energy for orb in orbs)
-    lumo_energies = [orb.lumo_energy for orb in orbs]
+    homo_energy = max([orb.homo_energy for orb in orbs if orb.homo_energy is not None])
+    lumo_energies = [orb.lumo_energy for orb in orbs if orb.lumo_energy is not None]
     lumo_energies = [lumo_energy for lumo_energy in lumo_energies if lumo_energy is not None]
     if len(lumo_energies) == 0:
         lumo_energy = None
@@ -127,7 +127,7 @@ def doc_inherit(base_class):
 
        .. code-block:: python
 
-            class Foo(object):
+            class Foo:
                 def foo(self):
                     "Frobber"
                     pass
@@ -151,7 +151,7 @@ def doc_inherit(base_class):
     return decorator
 
 
-def check_type(name, instance, *Classes):
+def check_type(name, instance, *classes):
     """Check type of argument with given name against list of types
 
        **Arguments:**
@@ -165,22 +165,23 @@ def check_type(name, instance, *Classes):
        Classes
             A list of allowed types.
     """
-    if len(Classes) == 0:
+    if len(classes) == 0:
         raise TypeError('Type checking with an empty list of classes. This is a simple bug!')
     match = False
-    for Class in Classes:
-        if isinstance(instance, Class):
+    for c in classes:
+        if isinstance(instance, c):
             match = True
             break
     if not match:
-        classes_parts = ['\'', Classes[0].__name__, '\'']
-        for Class in Classes[1:-1]:
-            classes_parts.extend([', ``', Class.__name__, '\''])
-        if len(Classes) > 1:
-            classes_parts.extend(['or \'', Class.__name__, '\''])
-        raise TypeError('The argument \'%s\' must be an instance of %s. Got a \'%s\' instance instead.' % (
-            name, ''.join(classes_parts), instance.__class__.__name__
-        ))
+        classes_parts = ['\'', classes[0].__name__, '\'']
+        for c in classes[1:-1]:
+            classes_parts.extend([', ``', c.__name__, '\''])
+        if len(classes) > 1:
+            classes_parts.extend(['or \'', c.__name__, '\''])
+        raise TypeError('The argument \'%s\' must be an instance of %s. Got a \'%s\' '
+                        'instance instead.' % (name, ''.join(classes_parts),
+                                               instance.__class__.__name__)
+                        )
 
 
 def fac2(n):

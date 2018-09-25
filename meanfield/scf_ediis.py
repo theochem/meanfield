@@ -93,29 +93,29 @@ class EDIISHistory(DIISHistory):
            missing dot products in self.edots.
         """
         # This routine  even works after multiple additions.
-        for i0 in xrange(self.nused - 1, -1, -1):
+        for i0 in range(self.nused - 1, -1, -1):
             if np.isfinite(self.edots[i0, i0]):
                 return
             # Compute off-diagonal coefficients
             state0 = self.stack[i0]
-            for i1 in xrange(i0 + 1):
+            for i1 in range(i0 + 1):
                 state1 = self.stack[i1]
                 self.edots[i0, i1] = 0.0
-                for j in xrange(self.ndm):
+                for j in range(self.ndm):
                     self.edots[i0, i1] += np.einsum('ab,ba', state0.focks[j], state1.dms[j])
                 if i0 != i1:
                     # Note that this matrix is not symmetric!
                     self.edots[i1, i0] = 0.0
-                    for j in xrange(self.ndm):
+                    for j in range(self.ndm):
                         self.edots[i1, i0] += np.einsum('ab,ba', state1.focks[j], state0.dms[j])
 
     def _setup_equations(self):
         """Compute the equations for the quadratic programming problem."""
         b = np.zeros((self.nused, self.nused), float)
         e = np.zeros(self.nused, float)
-        for i0 in xrange(self.nused):
+        for i0 in range(self.nused):
             e[i0] = -self.stack[i0].energy
-            for i1 in xrange(i0 + 1):
+            for i1 in range(i0 + 1):
                 b[i0, i1] = -0.5 * self.deriv_scale * (
                     self.edots[i0, i0] + self.edots[i1, i1] - self.edots[i0, i1] - self.edots[
                         i1, i0])
@@ -147,7 +147,7 @@ class EDIISHistory(DIISHistory):
         # for debugging purposes (negligible computational overhead)
         try:
             qps.check_solution(coeffs)
-        except:
+        except ValueError:
             qps.log(guess)
             raise
         cn = qps.compute_cn(coeffs != 0.0)

@@ -22,7 +22,7 @@
 import numpy as np
 from nose.plugins.skip import SkipTest
 
-from common import load_olp, load_orbs_alpha, load_orbs_beta
+from .common import load_olp, load_orbs_alpha, load_orbs_beta
 from ..moments import get_ncart_cumul, get_cartesian_powers
 from ..utils import get_spin, get_homo_lumo, get_level_shift
 
@@ -115,7 +115,7 @@ def test_get_ncart_cumul():
 def test_get_cartesian_powers():
     lmax = 4
     cartesian_powers = get_cartesian_powers(lmax)
-    assert issubclass(cartesian_powers.dtype.type, int)
+    assert np.issubdtype(cartesian_powers.dtype.type, np.signedinteger)
     assert cartesian_powers.shape == (get_ncart_cumul(lmax), 3)
     assert (cartesian_powers[0] == [0, 0, 0]).all()
     assert (cartesian_powers[1] == [1, 0, 0]).all()
@@ -127,7 +127,7 @@ def test_get_cartesian_powers():
     assert (cartesian_powers[19] == [0, 0, 3]).all()
     assert (cartesian_powers[-1] == [0, 0, 4]).all()
 
-    for lmax in xrange(4):
+    for lmax in range(4):
         tmp = get_cartesian_powers(lmax)
         assert tmp.shape == (get_ncart_cumul(lmax), 3)
         assert (tmp == cartesian_powers[:len(tmp)]).all()

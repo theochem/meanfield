@@ -21,7 +21,6 @@
 """Mean-field electronic structure code"""
 
 from .bond_order import *
-from .builtin import *
 from .cext import *
 from .convergence import *
 from .exceptions import *
@@ -33,8 +32,6 @@ from .libxc import *
 from .observable import *
 from .occ import *
 from .orbitals import *
-from .project import *
-from .response import *
 from .rotate import *
 from .scf import *
 from .scf_cdiis import *

@@ -1,10 +1,11 @@
 import numpy as np
 
+
 # from horton.moments
 
 def get_ncart_cumul(lmax):
     """The number of cartesian powers up to a given angular momentum, lmax."""
-    return ((lmax + 1) * (lmax + 2) * (lmax + 3)) / 6
+    return ((lmax + 1) * (lmax + 2) * (lmax + 3)) // 6
 
 
 def get_cartesian_powers(lmax):
@@ -23,9 +24,9 @@ def get_cartesian_powers(lmax):
     """
     cartesian_powers = np.zeros((get_ncart_cumul(lmax), 3), dtype=int)
     counter = 0
-    for l in xrange(0, lmax + 1):
-        for nx in xrange(l + 1, -1, -1):
-            for ny in xrange(l - nx, -1, -1):
+    for l in range(0, lmax + 1):
+        for nx in range(l + 1, -1, -1):
+            for ny in range(l - nx, -1, -1):
                 nz = l - ny - nx
                 cartesian_powers[counter] = [nx, ny, nz]
                 counter += 1
@@ -793,7 +794,7 @@ def rotate_cartesian_multipole(rmat, moments, mode):
     else:
         raise NotImplementedError
     result = np.zeros(len(moments))
-    for i0 in xrange(len(moments)):
+    for i0 in range(len(moments)):
         rules = cartesian_transforms[l][i0]
         for rule in rules:
             i1 = rule[0]

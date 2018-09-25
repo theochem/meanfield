@@ -21,6 +21,7 @@
 """Optimal Damping SCF algorithm"""
 
 import numpy as np
+import matplotlib.pyplot as pt
 
 from .exceptions import NoSCFConvergence
 from .convergence import convergence_error_commutator
@@ -104,7 +105,7 @@ def find_min_quadratic(g0, g1):
             return 1.0
 
 
-class ODASCFSolver(object):
+class ODASCFSolver:
     """Optimal damping SCF algorithm (with cubic interpolation)"""
     kind = 'dm'  # input/output variable is the density matrix
 
@@ -155,7 +156,7 @@ class ODASCFSolver(object):
                 'The number of initial density matrices does not match the Hamiltonian.')
 
         # Check input density matrices.
-        for i in xrange(ham.ndm):
+        for i in range(ham.ndm):
             check_dm(dm0s[i], overlap)
         occ_model.check_dms(overlap, *dm0s)
 
@@ -164,10 +165,10 @@ class ODASCFSolver(object):
         print('5: Iter               Energy         Error      Mixing')
         print("5: " + "-" * 70)
 
-        fock0s = [np.zeros(overlap.shape) for i in xrange(ham.ndm)]
-        fock1s = [np.zeros(overlap.shape) for i in xrange(ham.ndm)]
-        dm1s = [np.zeros(overlap.shape) for i in xrange(ham.ndm)]
-        orbs = [Orbitals(overlap.shape[0]) for i in xrange(ham.ndm)]
+        fock0s = [np.zeros(overlap.shape) for i in range(ham.ndm)]
+        fock1s = [np.zeros(overlap.shape) for i in range(ham.ndm)]
+        dm1s = [np.zeros(overlap.shape) for i in range(ham.ndm)]
+        orbs = [Orbitals(overlap.shape[0]) for i in range(ham.ndm)]
         converged = False
         counter = 0
         mixing = None
@@ -186,12 +187,12 @@ class ODASCFSolver(object):
                 print('5: %5i %20.13f  %12.5e  %10.5f' % (counter, energy0, error, mixing))
 
             # go to point 1 by diagonalizing the fock matrices
-            for i in xrange(ham.ndm):
+            for i in range(ham.ndm):
                 orbs[i].from_fock(fock0s[i], overlap)
             # Assign new occupation numbers.
             occ_model.assign(*orbs)
             # Construct the density matrices
-            for i in xrange(ham.ndm):
+            for i in range(ham.ndm):
                 dm1s[i][:] = orbs[i].to_dm()
 
             # feed the latest density matrices in the hamiltonian
@@ -205,7 +206,7 @@ class ODASCFSolver(object):
             # linear interpolation of the density matrices
             deriv0 = 0.0
             deriv1 = 0.0
-            for i in xrange(ham.ndm):
+            for i in range(ham.ndm):
                 deriv0 += np.einsum('ab,ab', fock0s[i], dm1s[i])
                 deriv0 -= np.einsum('ab,ab', fock0s[i], dm0s[i])
                 deriv1 += np.einsum('ab,ab', fock1s[i], dm1s[i])
@@ -222,7 +223,7 @@ class ODASCFSolver(object):
                 check_cubic(ham, dm0s, dm1s, energy0, energy1, deriv0, deriv1)
 
             # compute the mixed density and fock matrices (in-place in dm0s and fock0s)
-            for i in xrange(ham.ndm):
+            for i in range(ham.ndm):
                 dm0s[i][:] *= 1 - mixing
                 dm0s[i][:] += dm1s[i] * mixing
                 fock0s[i][:] *= 1 - mixing
@@ -230,7 +231,7 @@ class ODASCFSolver(object):
 
             # Compute the convergence criterion.
             errorsq = 0.0
-            for i in xrange(ham.ndm):
+            for i in range(ham.ndm):
                 commutator = compute_commutator(dm0s[i], fock0s[i], overlap)
                 errorsq += np.einsum('ab,ab', commutator, commutator)
             error = errorsq ** 0.5
@@ -308,7 +309,7 @@ def check_cubic(ham, dm0s, dm1s, e0, e1, g0, g1, do_plot=True):
     xs = np.array([0.001, 0.002, 0.003, 0.004, 0.005, 0.995, 0.996, 0.997, 0.998, 0.999])
     energies = []
     for x in xs:
-        for i in xrange(ndm):
+        for i in range(ndm):
             dm2s[i][:] = dm0s[i] * (1 - x) + dm1s[i] * x
         ham.reset(*dm2s)
         e2 = ham.compute_energy()

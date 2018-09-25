@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 
-class EffHam(object):
+class EffHam:
     """Base class for the effective Hamiltonians.
 
     Class attributes
@@ -111,7 +111,7 @@ class EffHam(object):
             energy = term.compute_energy(self.cache)
             self.cache['energy_%s' % term.label] = energy
             total += energy
-        for key, energy in self.external.iteritems():
+        for key, energy in self.external.items():
             self.cache['energy_%s' % key] = energy
             total += energy
         self.cache['energy'] = total
@@ -126,7 +126,7 @@ class EffHam(object):
         for term in self.terms:
             energy = self.cache['energy_%s' % term.label]
             print('5: %50s  %20.12f' % (term.label, energy))
-        for key, energy in self.external.iteritems():
+        for key, energy in self.external.items():
             print('5: %50s  %20.12f' % (key, energy))
         print('5: %50s  %20.12f' % ('total', self.cache['energy']))
         print("5: " + "-" * 70)

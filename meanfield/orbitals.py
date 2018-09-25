@@ -28,7 +28,7 @@ from .utils import check_type
 __all__ = ['Orbitals', 'check_dm']
 
 
-class Orbitals(object):
+class Orbitals:
     """Orbital coefficient, energies and occupation numbers (single spin channel)."""
 
     #
@@ -55,35 +55,30 @@ class Orbitals(object):
     # Properties
     #
 
-    def _get_nbasis(self):
+    @property
+    def nbasis(self):
         """The number of basis functions."""
         return self._coeffs.shape[0]
 
-    nbasis = property(_get_nbasis)
-
-    def _get_nfn(self):
+    @property
+    def nfn(self):
         """The number of orbitals (or functions in general)."""
         return self._coeffs.shape[1]
 
-    nfn = property(_get_nfn)
-
-    def _get_coeffs(self):
+    @property
+    def coeffs(self):
         """The matrix with the expansion coefficients."""
         return self._coeffs.view()
 
-    coeffs = property(_get_coeffs)
-
-    def _get_energies(self):
+    @property
+    def energies(self):
         """The orbital energies."""
         return self._energies.view()
 
-    energies = property(_get_energies)
-
-    def _get_occupations(self):
+    @property
+    def occupations(self):
         """The orbital occupations."""
         return self._occupations.view()
-
-    occupations = property(_get_occupations)
 
     #
     # Methods
@@ -97,37 +92,6 @@ class Orbitals(object):
                (other._coeffs == self._coeffs).all() and \
                (other._energies == self._energies).all() and \
                (other._occupations == self._occupations).all()
-
-    @classmethod
-    def from_hdf5(cls, grp):
-        """Construct an instance from data previously stored in an h5py.Group.
-
-        Parameters
-        ----------
-        grp : h5py.Group
-            Group used to take all data to initialize an Orbitals object
-        """
-        if grp.attrs['class'] != cls.__name__:
-            raise TypeError('The class of the expansion in the HDF5 file does not match.')
-        nbasis, nfn = grp['coeffs'].shape
-        result = cls(nbasis, nfn)
-        grp['coeffs'].read_direct(result._coeffs)
-        grp['energies'].read_direct(result._energies)
-        grp['occupations'].read_direct(result._occupations)
-        return result
-
-    def to_hdf5(self, grp):
-        """Dump this object in an h5py.Group.
-
-        Parameters
-        ----------
-        grp : h5py.Group
-            Destination where the data are stored.
-        """
-        grp.attrs['class'] = self.__class__.__name__
-        grp['coeffs'] = self._coeffs
-        grp['energies'] = self._energies
-        grp['occupations'] = self._occupations
 
     def clear(self):
         """Reset all elements to zero."""
@@ -204,7 +168,7 @@ class Orbitals(object):
         eps : float
             The allowed deviation from unity, very loose by default.
         """
-        for i in xrange(self.nfn):
+        for i in range(self.nfn):
             if self.occupations[i] == 0:
                 continue
             norm = np.dot(self._coeffs[:, i], np.dot(overlap, self._coeffs[:, i]))
@@ -223,10 +187,10 @@ class Orbitals(object):
         eps : float
             The allowed deviation from unity, very loose by default.
         """
-        for i0 in xrange(self.nfn):
+        for i0 in range(self.nfn):
             if self.occupations[i0] == 0:
                 continue
-            for i1 in xrange(i0 + 1):
+            for i1 in range(i0 + 1):
                 if self.occupations[i1] == 0:
                     continue
                 dot = np.dot(self._coeffs[:, i0], np.dot(overlap, self._coeffs[:, i1]))
@@ -303,7 +267,7 @@ class Orbitals(object):
         # energy levels are sorted (one way or the other).
         clusters = []
         begin = 0
-        for ifn in xrange(1, self.nfn):
+        for ifn in range(1, self.nfn):
             if abs(self.energies[ifn] - self.energies[ifn - 1]) > epstol:
                 end = ifn
                 clusters.append([begin, end])
@@ -328,7 +292,7 @@ class Orbitals(object):
                 self.coeffs[:, begin:end] = np.dot(self.coeffs[:, begin:end], evecs)
                 # Compute expectation values
                 self.occupations[begin:end] = evals
-                for i0 in xrange(end - begin):
+                for i0 in range(end - begin):
                     self.energies[begin + i0] = np.dot(self.coeffs[:, begin + i0],
                                                        np.dot(fock, self.coeffs[:, begin + i0]))
 
@@ -474,7 +438,8 @@ class Orbitals(object):
 
         The attributes ``energies`` and ``occupations`` are also reordered.
         """
-        if not (swaps.shape[1] == 2 and swaps.ndim == 2 and issubclass(swaps.dtype.type, int)):
+        if not (swaps.shape[1] == 2 and swaps.ndim == 2 and np.issubdtype(swaps.dtype.type,
+                                                                          np.signedinteger)):
             raise TypeError('The argument swaps has the wrong shape/type.')
         for iswap in range(len(swaps)):
             index0, index1 = swaps[iswap]

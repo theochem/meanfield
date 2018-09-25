@@ -22,11 +22,13 @@
 
 from nose.tools import assert_raises
 
-from horton.grid import BeckeMolGrid
+from old_grids.grid import BeckeMolGrid
 from .common import get_obasis, load_mdata, load_orbs_alpha
 from .. import RGridGroup, RLibXCMGGA, UGridGroup
 from ..cache import Cache
 
+import faulthandler
+faulthandler.enable()
 
 def test_gridgroup_density_cutoff():
     # prepare some molecule

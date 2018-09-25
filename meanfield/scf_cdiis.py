@@ -95,16 +95,16 @@ class CDIISHistory(DIISHistory):
            Even after multiple additions, this routine will fill up all the
            missing dot products in self.cdots.
         """
-        for i0 in xrange(self.nused - 1, -1, -1):
+        for i0 in range(self.nused - 1, -1, -1):
             state0 = self.stack[i0]
             self.cdots[i0, i0] = state0.normsq
             # Compute off-diagonal coefficients
-            for i1 in xrange(i0):
+            for i1 in range(i0):
                 if np.isfinite(self.cdots[i0, i1]):
                     return
                 state1 = self.stack[i1]
                 cdot = 0.0
-                for j in xrange(self.ndm):
+                for j in range(self.ndm):
                     cdot += np.einsum('ab,ab', state0.commutators[j], state1.commutators[j])
                 self.cdots[i0, i1] = cdot
                 self.cdots[i1, i0] = cdot
